@@ -111,6 +111,32 @@ unsigned life_compute_seq (unsigned nb_iter)
   return 0;
 }
 
+
+unsigned life_compute_omp (unsigned nb_iter)
+{
+  for (unsigned it = 1; it <= nb_iter; it++) {
+    int change = 0;
+
+      monitoring_start_tile (0);
+    #pragma omp parallel
+    {
+      #pragma omp for
+      for (int i = 0; i < DIM; i++)
+        for (int j = 0; j < DIM; j++)
+          change |= compute_new_state (i, j);
+    }
+
+      monitoring_end_tile (0, 0, DIM, DIM, 0);
+
+    swap_tables ();
+
+    if (!change)
+      return it;
+  }
+
+  return 0;
+}
+
 ///////////////////////////// Tiled sequential version (tiled)
 
 // Tile inner computation
@@ -160,6 +186,133 @@ unsigned life_compute_tiled (unsigned nb_iter)
   return res;
 }
 
+// Our own functions
+
+
+//Simple multithreaded version
+unsigned life_compute_tiled_omp_for (unsigned nb_iter)
+{
+  unsigned res = 0;
+
+  for (unsigned it = 1; it <= nb_iter; it++) {
+    unsigned change = 0;
+    #pragma omp parallel
+    {
+      #pragma omp for
+      for (int y = 0; y < DIM; y += TILE_H)
+        for (int x = 0; x < DIM; x += TILE_W)
+          change |= do_tile (x, y, TILE_W, TILE_H, omp_get_thread_num());
+    }
+    swap_tables ();
+
+    if (!change) { // we stop when all cells are stable
+      res = it;
+      break;
+    }
+  }
+
+  return res;
+}
+
+//Simple multithreaded version (collapsed for)
+unsigned life_compute_tiled_omp_for_c (unsigned nb_iter)
+{
+  unsigned res = 0;
+
+  for (unsigned it = 1; it <= nb_iter; it++) {
+    unsigned change = 0;
+    #pragma omp parallel
+    {
+      #pragma omp for collapse(2)
+      for (int y = 0; y < DIM; y += TILE_H)
+        for (int x = 0; x < DIM; x += TILE_W)
+          change |= do_tile (x, y, TILE_W, TILE_H, omp_get_thread_num());
+    }
+    swap_tables ();
+
+    if (!change) { // we stop when all cells are stable
+      res = it;
+      break;
+    }
+  }
+
+  return res;
+}
+
+//Simple multithreaded version (collapsed for, dynamic scheduling)
+unsigned life_compute_tiled_omp_for_cd(unsigned nb_iter)
+{
+  unsigned res = 0;
+
+  for (unsigned it = 1; it <= nb_iter; it++) {
+    unsigned change = 0;
+    #pragma omp parallel
+    {
+      #pragma omp for collapse(2) schedule(dynamic)
+      for (int y = 0; y < DIM; y += TILE_H)
+        for (int x = 0; x < DIM; x += TILE_W)
+          change |= do_tile (x, y, TILE_W, TILE_H, omp_get_thread_num());
+    }
+    swap_tables ();
+
+    if (!change) { // we stop when all cells are stable
+      res = it;
+      break;
+    }
+  }
+
+  return res;
+}
+
+//Simple multithreaded version (collapsed for, static scheduling)
+unsigned life_compute_tiled_omp_for_cs(unsigned nb_iter)
+{
+  unsigned res = 0;
+
+  for (unsigned it = 1; it <= nb_iter; it++) {
+    unsigned change = 0;
+    #pragma omp parallel
+    {
+      #pragma omp for collapse(2) schedule(static)
+      for (int y = 0; y < DIM; y += TILE_H)
+        for (int x = 0; x < DIM; x += TILE_W)
+          change |= do_tile (x, y, TILE_W, TILE_H, omp_get_thread_num());
+    }
+    swap_tables ();
+
+    if (!change) { // we stop when all cells are stable
+      res = it;
+      break;
+    }
+  }
+
+  return res;
+}
+
+//Simple multithreaded version (collapsed for, static scheduling)
+unsigned life_compute_tiled_omp_for_cs1(unsigned nb_iter)
+{
+  unsigned res = 0;
+
+  for (unsigned it = 1; it <= nb_iter; it++) {
+    unsigned change = 0;
+    #pragma omp parallel
+    {
+      #pragma omp for collapse(2) schedule(static, 1)
+      for (int y = 0; y < DIM; y += TILE_H)
+        for (int x = 0; x < DIM; x += TILE_W)
+          change |= do_tile (x, y, TILE_W, TILE_H, omp_get_thread_num());
+    }
+    swap_tables ();
+
+    if (!change) { // we stop when all cells are stable
+      res = it;
+      break;
+    }
+  }
+
+  return res;
+}
 ///////////////////////////// Initial configs
 
 void life_draw_guns (void);
