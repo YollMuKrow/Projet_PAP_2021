@@ -218,7 +218,7 @@ static void do_touch_tile(int x, int y, int width, int height)
         }
 
 }
-static void touch_tile(int x, int y, int width, int height, int who){
+static int touch_tile(int x, int y, int width, int height, int who){
     int r;
 
     monitoring_start_tile (who);
@@ -230,10 +230,13 @@ static void touch_tile(int x, int y, int width, int height, int who){
     return r;
 }
 static void life_ft_omp(void){
-#pragma omp parallel for collapse(2) schedule(runtime)
-    for(int i = 0; i < DIM; i++)
-        for (int j = 0; j < DIM; j+=TILE_W)
-            touch_tile(i, j TILE_W, TILE_H, omp_get_thread_num());
+#pragma omp parallel
+    {
+#pragma omp for collapse(2) schedule(runtime)
+        for(int i = 0; i < DIM; i++)
+            for (int j = 0; j < DIM; j+=TILE_W)
+                touch_tile(i, j, TILE_W, TILE_H, omp_get_thread_num());
+    }
 }
 //test OMP_NUM_THREAD=46 OMP_PLACES=cores ./run -k life -n -i 50 -a random -s 2048 -v tiled_omp_for_inner_first_touch -th 32 -tw 32
 unsigned life_compute_tiled_omp_for_inner_first_touch (unsigned nb_iter)
