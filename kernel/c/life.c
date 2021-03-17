@@ -218,16 +218,13 @@ static void do_touch_tile(int x, int y, int width, int height)
         }
 
 }
-static int touch_tile(int x, int y, int width, int height, int who){
-    int r;
+static void touch_tile(int x, int y, int width, int height, int who){
 
     monitoring_start_tile (who);
 
-    r = do_touch_tile(x, y, width, height);
+    do_touch_tile(x, y, width, height);
 
     monitoring_end_tile (x, y, width, height, who);
-
-    return r;
 }
 static void life_ft_omp(void){
 #pragma omp parallel
