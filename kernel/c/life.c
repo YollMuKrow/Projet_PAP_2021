@@ -211,7 +211,7 @@ static int do_inner_tile (int x, int y, int width, int height, int who)
 
 static void life_ft_omp(void){
 #pragma omp parallel for
-    for(int i = 0; i < DIM; i++)
+    for(int i = 0; i < DIM; i+=TILE_H)
     for (int j = 0; j < DIM; j+=TILE_W)
         next_table(i,j) = cur_table(i,j);
 }
