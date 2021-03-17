@@ -213,9 +213,7 @@ static int do_inner_tile (int x, int y, int width, int height, int who)
 static void do_touch_tile(int x, int y, int width, int height)
 {
     for (int i = y; i < y + height; i++)
-        for (int j = x; j < x + width; j+= width){
-            next_table (y, x) = cur_table (i, j);
-        }
+        next_table (i, x) = cur_table (i, x);
 }
 
 static void life_ft_omp(void){
