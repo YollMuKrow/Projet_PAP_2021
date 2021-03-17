@@ -212,6 +212,7 @@ static int do_inner_tile (int x, int y, int width, int height, int who)
 //////////////// TOUCH TILE FUNCTION
 static void do_touch_tile(int x, int y, int width, int height)
 {
+//un com random
     for (int i = y; i < y + height; i++)
         next_table (i, x) = cur_table (i, x);
 }
