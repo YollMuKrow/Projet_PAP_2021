@@ -214,7 +214,7 @@ static void do_touch_tile(int x, int y, int width, int height)
 {
     for (int i = y; i < y + height; i++)
         for (int j = x; j < x + width; j++){
-            next_table (y, x) = cur_table (i, j) = 0;
+            next_table (y, x) = cur_table (i, j);
         }
 }
 
@@ -227,7 +227,7 @@ static void life_ft_omp(void){
                 do_touch_tile(i, j, TILE_W, TILE_H);
     }
 }
-//test OMP_NUM_THREAD=46 OMP_PLACES=cores ./run -k life -n -i 50 -a random -s 2048 -v tiled_omp_for_inner_first_touch -th 32 -tw 32
+//test OMP_NUM_THREADS=46 OMP_PLACES=cores ./run -k life -n -i 50 -a random -s 2048 -v tiled_omp_for_inner_first_touch -th 32 -tw 32
 unsigned life_compute_tiled_omp_for_inner_first_touch (unsigned nb_iter)
 {
     unsigned res = 0;
