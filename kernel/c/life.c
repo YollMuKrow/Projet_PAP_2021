@@ -219,6 +219,7 @@ static void life_ft_omp(void){
 unsigned life_compute_tiled_omp_for_inner_first_touch (unsigned nb_iter)
 {
     unsigned res = 0;
+    life_ft_omp();
     for (unsigned it = 1; it <= nb_iter; it++) {
         unsigned change = 0;
 #pragma omp parallel
@@ -249,7 +250,7 @@ unsigned life_compute_tiled_omp_for_inner_first_touch (unsigned nb_iter)
 unsigned life_compute_tiled_omp_for_inner_c_first_touch (unsigned nb_iter)
 {
     unsigned res = 0;
-
+    life_ft_omp();
     for (unsigned it = 1; it <= nb_iter; it++) {
         unsigned change = 0;
 #pragma omp parallel
@@ -272,8 +273,6 @@ unsigned life_compute_tiled_omp_for_inner_c_first_touch (unsigned nb_iter)
 
     return res;
 }
-
-
 
 ///////////////////////// TEST INNER_TILED OMP VERSION
 //test OMP_NUM_THREAD=46 OMP_PLACES=cores ./run -k life -n -i 100 -a random -s 2048 -v tiled_omp_for_inner -th 16 -tw 16-> 118.774
