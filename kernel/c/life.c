@@ -177,9 +177,9 @@ unsigned life_compute_tiled_omp_for_inner_first_touch (unsigned nb_iter)
 #pragma omp parallel
         {
 #pragma omp for
-            for (int y = 0; y < DIM; y++)
+            for (int y = 0; y < DIM; y += TILE_H)
                 for (int x = 0; x < DIM; x += TILE_W) {
-                    next_table (i, j) = cur_table (i, j) = 0;
+                    next_table (x, y) = cur_table (x, y) = 0;
                 }
         }
 #pragma omp parallel
@@ -217,9 +217,9 @@ unsigned life_compute_tiled_omp_for_inner_c_first_touch (unsigned nb_iter)
 #pragma omp parallel
         {
 #pragma omp for
-            for (int y = 0; y < DIM; y++)
+            for (int y = 0; y < DIM; y += TILE_H)
                 for (int x = 0; x < DIM; x += TILE_W) {
-                    next_table (i, j) = cur_table (i, j) = 0;
+                    next_table (x, y) = cur_table (x, y) = 0;
                 }
         }
 #pragma omp parallel
