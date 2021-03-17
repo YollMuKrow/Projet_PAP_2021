@@ -166,6 +166,48 @@ unsigned life_compute_tiled (unsigned nb_iter)
 
 
 ///////////////////////// TEST FIRST TOUCH 32x32 for_inner_c + for_inner
+static int compute_new_state_nocheck (int y, int x)
+{
+    unsigned n      = 0;
+    unsigned me     = cur_table (y, x) != 0;
+    unsigned change = 0;
+
+    for (int i = y - 1; i <= y + 1; i++)
+        for (int j = x - 1; j <= x + 1; j++)
+            n += cur_table (i, j);
+
+    n = (n == 3 + me) | (n == 3);
+    if (n != me)
+        change |= 1;
+
+    next_table (y, x) = n;
+
+    return change;
+}
+
+// Tile inner computation
+static int do_tile_nocheck (int x, int y, int width, int height)
+{
+    int change = 0;
+
+    for (int i = y; i < y + height; i++)
+        for (int j = x; j < x + width; j++)
+            change |= compute_new_state_nocheck(i, j);
+
+    return change;
+}
+static int do_inner_tile (int x, int y, int width, int height, int who)
+{
+    int r;
+
+    monitoring_start_tile (who);
+
+    r = do_tile_nocheck(x, y, width, height);
+
+    monitoring_end_tile (x, y, width, height, who);
+
+    return r;
+}
 
 //test OMP_NUM_THREAD=46 OMP_PLACES=cores ./run -k life -n -i 50 -a random -s 2048 -v tiled_omp_for_inner -th 32 -tw 32
 unsigned life_compute_tiled_omp_for_inner_first_touch (unsigned nb_iter)
@@ -246,49 +288,6 @@ unsigned life_compute_tiled_omp_for_inner_c_first_touch (unsigned nb_iter)
 
 
 ///////////////////////// TEST INNER_TILED OMP VERSION
-static int compute_new_state_nocheck (int y, int x)
-{
-    unsigned n      = 0;
-    unsigned me     = cur_table (y, x) != 0;
-    unsigned change = 0;
-
-    for (int i = y - 1; i <= y + 1; i++)
-        for (int j = x - 1; j <= x + 1; j++)
-            n += cur_table (i, j);
-
-    n = (n == 3 + me) | (n == 3);
-    if (n != me)
-        change |= 1;
-
-    next_table (y, x) = n;
-
-    return change;
-}
-
-// Tile inner computation
-static int do_tile_nocheck (int x, int y, int width, int height)
-{
-    int change = 0;
-
-    for (int i = y; i < y + height; i++)
-        for (int j = x; j < x + width; j++)
-            change |= compute_new_state_nocheck(i, j);
-
-    return change;
-}
-static int do_inner_tile (int x, int y, int width, int height, int who)
-{
-    int r;
-
-    monitoring_start_tile (who);
-
-    r = do_tile_nocheck(x, y, width, height);
-
-    monitoring_end_tile (x, y, width, height, who);
-
-    return r;
-}
-
 //test OMP_NUM_THREAD=46 OMP_PLACES=cores ./run -k life -n -i 100 -a random -s 2048 -v tiled_omp_for_inner -th 16 -tw 16-> 118.774
 unsigned life_compute_tiled_omp_for_inner (unsigned nb_iter)
 {
