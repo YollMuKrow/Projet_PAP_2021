@@ -22,7 +22,7 @@ static inline cell_t *table_cell (cell_t *restrict i, int y, int x)
     return i + y * DIM + x;
 }
 
-static inline cell_t *table_change (cell_t *restrict i, int y, int x)
+static inline bool *table_change (bool *restrict i, int y, int x)
 {
     return i + y * NB_TILES_Y + x;
 }
