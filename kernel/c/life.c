@@ -241,23 +241,33 @@ static int do_inner_tile (int x, int y, int width, int height, int who)
     return r;
 }
 
-//test OMP_NUM_THREAD=46 OMP_PLACES=cores ./run -k life -n -i 50 -a random -s 2048 -v tiled_omp_for_inner -th 32 -tw 32
-unsigned life_compute_tiled_omp_for_inner_first_touch (unsigned nb_iter)
+//////////////// TOUCH TILE FUNCTION
+static void do_touch_tile(int x, int y, int width, int height)
+{
+//un com random
+    for (int i = y; i < y + height; i++)
+        next_table (i, x) = cur_table (i, x);
+}
+
+static void life_ft_omp(void){
+#pragma omp parallel
+    {
+#pragma omp for collapse(2) schedule(runtime)
+        for(int i = 0; i < DIM; i+=TILE_W)
+            for (int j = 0; j < DIM; j+=TILE_W)
+                do_touch_tile(i, j, TILE_W, TILE_H);
+    }
+}
+//test OMP_NUM_THREADS=46 OMP_PLACES=cores ./run -k life -n -i 50 -a random -s 2048 -v tiled_omp_for_inner_first_touch -th 32 -tw 32
+unsigned life_compute_tiled_omp_for_c_inner_first_touch (unsigned nb_iter)
 {
     unsigned res = 0;
+    life_ft_omp();
     for (unsigned it = 1; it <= nb_iter; it++) {
         unsigned change = 0;
 #pragma omp parallel
         {
-#pragma omp for
-            for (int y = 0; y < DIM; y += TILE_H)
-                for (int x = 0; x < DIM; x += TILE_W) {
-                    next_table (x, y) = cur_table (x, y);
-                }
-        }
-#pragma omp parallel
-        {
-#pragma omp for
+#pragma omp for collapse(2)
             //On analyse la partie interne
             for (int y = 0; y < DIM; y += TILE_H)
                 for (int x = 0; x < DIM; x += TILE_W){
@@ -266,7 +276,6 @@ unsigned life_compute_tiled_omp_for_inner_first_touch (unsigned nb_iter)
                     else
                         change |= do_inner_tile (x, y, TILE_W, TILE_H, omp_get_thread_num());
                 }
-
         }
         swap_tables ();
 
@@ -280,24 +289,16 @@ unsigned life_compute_tiled_omp_for_inner_first_touch (unsigned nb_iter)
 }
 
 //Inner multithreaded version (collapsed for)
-//test OMP_NUM_THREADS=46 OMP_PLACES=cores ./run -k life -n -i 50 -a random -s 2048 -v tiled_omp_for_inner_c -th 32 -tw 32
-unsigned life_compute_tiled_omp_for_inner_c_first_touch (unsigned nb_iter)
+//test OMP_NUM_THREADS=46 OMP_PLACES=cores ./run -k life -n -i 50 -a random -s 2048 -v tiled_omp_for_inner_c_first_touch -th 32 -tw 32
+unsigned life_compute_tiled_omp_for_inner_first_touch (unsigned nb_iter)
 {
     unsigned res = 0;
-
+    life_ft_omp();
     for (unsigned it = 1; it <= nb_iter; it++) {
         unsigned change = 0;
 #pragma omp parallel
         {
 #pragma omp for
-            for (int y = 0; y < DIM; y += TILE_H)
-                for (int x = 0; x < DIM; x += TILE_W) {
-                    next_table (x, y) = cur_table (x, y) = 0;
-                }
-        }
-#pragma omp parallel
-        {
-#pragma omp for collapse(2)
             for (int y = 0; y < DIM; y += TILE_H)
                 for (int x = 0; x < DIM; x += TILE_W)
                     if (x == 0 || x == DIM-TILE_W || y == 0 || y == DIM-TILE_H)
