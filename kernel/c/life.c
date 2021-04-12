@@ -544,16 +544,16 @@ unsigned life_compute_lazy(unsigned nb_iter)
 #pragma omp for nowait schedule(static)
 			for(int y = TILE_H; y<(DIM-TILE_H); y+=TILE_H) {
 				for (int x = TILE_W; x < (DIM - TILE_W); x += TILE_W) {
-					if (cur_change_table((x >> tile_w_power), (y >> tile_h_power))
-					    || cur_change_table((x >> tile_w_power) - 1, (y >> tile_h_power))
-					    || cur_change_table((x >> tile_w_power), (y >> tile_h_power) - 1)
-					    || cur_change_table((x >> tile_w_power) - 1, (y >> tile_h_power) - 1)
-					    || cur_change_table((x >> tile_w_power) + 1, (y >> tile_h_power))
-					    || cur_change_table((x >> tile_w_power), (y >> tile_h_power) + 1)
-					    || cur_change_table((x >> tile_w_power) + 1, (y >> tile_h_power) + 1)
-					    || cur_change_table((x >> tile_w_power) - 1, (y >> tile_h_power) + 1)
-					    || cur_change_table((x >> tile_w_power) + 1, (y >> tile_h_power) - 1))
-						next_change_table(1, y) = do_inner_tile(1, y, TILE_W - 1, TILE_H, omp_get_thread_num());
+//					if (cur_change_table((x >> tile_w_power)       , (y >> tile_h_power))
+//					    || cur_change_table((x >> tile_w_power) - 1, (y >> tile_h_power))
+//					    || cur_change_table((x >> tile_w_power)    , (y >> tile_h_power) - 1)
+//					    || cur_change_table((x >> tile_w_power) - 1, (y >> tile_h_power) - 1)
+//					    || cur_change_table((x >> tile_w_power) + 1, (y >> tile_h_power))
+//					    || cur_change_table((x >> tile_w_power)    , (y >> tile_h_power) + 1)
+//					    || cur_change_table((x >> tile_w_power) + 1, (y >> tile_h_power) + 1)
+//					    || cur_change_table((x >> tile_w_power) - 1, (y >> tile_h_power) + 1)
+//					    || cur_change_table((x >> tile_w_power) + 1, (y >> tile_h_power) - 1))
+					next_change_table(1, y) = do_inner_tile(1, y, TILE_W - 1, TILE_H, omp_get_thread_num());
 					next_change_table(1, y) = do_inner_tile(DIM - TILE_W, y, TILE_W - 1, TILE_H, omp_get_thread_num());
 				}
 			}
