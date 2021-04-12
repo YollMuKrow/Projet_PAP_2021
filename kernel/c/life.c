@@ -81,9 +81,8 @@ void life_finalize (void)
 }
 
 //////////////// TOUCH TILE FUNCTION
-void do_touch_tile(int x, int y, int width, int height)
+void do_touch_tile(int x, int y, int width, int height, int who)
 {
-
 	for (int i = y; i < y + height; i++)
 		next_table (i, x) = cur_table (i, x);
 }
@@ -92,9 +91,9 @@ void life_ft(void){
 #pragma omp parallel
 	{
 #pragma omp for collapse(2) schedule(runtime)
-		for(int i = 0; i < DIM; i+=TILE_W)
-			for (int j = 0; j < DIM; j+=TILE_W)
-				do_touch_tile(i, j, TILE_W, TILE_H);
+		for(int y = 0; y < DIM; y+=TILE_W)
+			for (int x = 0; x < DIM; x += TILE_W)
+				do_touch_tile(x, y, TILE_W, TILE_H, omp_get_thread_num());
 	}
 }
 
