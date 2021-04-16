@@ -77,15 +77,15 @@ void life_refresh_img_ocl (void){
 	life_refresh_img ();
 }
 
-//unsigned life_invoke_ocl (unsigned nb_iter)
-//{
-//	size_t global[2] = {GPU_SIZE_X, GPU_SIZE_Y};
-//	size_t local[2]  = {GPU_TILE_W, GPU_TILE_H};
-//	cl_int err;
-//
-//	monitoring_start_tile (easypap_gpu_lane (TASK_TYPE_COMPUTE));
-//
-//	for (unsigned it = 1; it <= nb_iter; it++) {
+unsigned life_invoke_ocl (unsigned nb_iter)
+{
+	size_t global[2] = {GPU_SIZE_X, GPU_SIZE_Y};
+	size_t local[2]  = {GPU_TILE_W, GPU_TILE_H};
+	cl_int err;
+
+	monitoring_start_tile (easypap_gpu_lane (TASK_TYPE_COMPUTE));
+
+	for (unsigned it = 1; it <= nb_iter; it++) {
 //		err = 0;
 //		err |= clSetKernelArg (compute_kernel, 0, sizeof (cl_mem), &cur_buffer);
 //		err |= clSetKernelArg (compute_kernel, 1, sizeof (cl_mem), &next_buffer);
@@ -100,13 +100,13 @@ void life_refresh_img_ocl (void){
 //			cur_buffer = next_buffer;
 //			next_buffer = tmp;
 //		}
-//
-//	}
-//
-//	clFinish (queue);
-//	monitoring_end_tile (0, 0, DIM, DIM, easypap_gpu_lane (TASK_TYPE_COMPUTE));
-//	return 0;
-//}
+
+	}
+
+	clFinish (queue);
+	monitoring_end_tile (0, 0, DIM, DIM, easypap_gpu_lane (TASK_TYPE_COMPUTE));
+	return 0;
+}
 //
 //void life_init_ocl (void)
 //{
@@ -209,10 +209,6 @@ unsigned life_compute_tiled (unsigned nb_iter)
 }
 
 ///////////////////////////// Tiled parallel version
-//trace :OMP_NUM_THREAD=24 ./run -k life -v tiled_omp_for_cs -i 100 -tn -n
-//       OMP_NUM_THREADS=24 ./run -k life -v tiled_omp_for_cs -i 100 -t -n
-// ./view
-
 
 ///////////////////////// TEST FIRST TOUCH 32x32 for_inner_c + for_inner
 static int compute_new_state_nocheck (int y, int x)
