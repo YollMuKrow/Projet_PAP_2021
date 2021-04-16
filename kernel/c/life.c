@@ -77,6 +77,41 @@ void life_refresh_img_ocl (void){
 	life_refresh_img ();
 }
 
+//unsigned life_invoke_ocl (unsigned nb_iter)
+//{
+//	size_t global[2] = {GPU_SIZE_X, GPU_SIZE_Y};
+//	size_t local[2]  = {GPU_TILE_W, GPU_TILE_H};
+//	cl_int err;
+//
+//	monitoring_start_tile (easypap_gpu_lane (TASK_TYPE_COMPUTE));
+//
+//	for (unsigned it = 1; it <= nb_iter; it++) {
+//		err = 0;
+//		err |= clSetKernelArg (compute_kernel, 0, sizeof (cl_mem), &cur_buffer);
+//		err |= clSetKernelArg (compute_kernel, 1, sizeof (cl_mem), &next_buffer);
+//		check (err, "Failed to set kernel arguments");
+//
+//		err = clEnqueueNDRangeKernel (queue, compute_kernel, 2, NULL, global, local,
+//		                              0, NULL, NULL);
+//		check (err, "Failed to execute kernel");
+//
+//		{
+//			cl_mem tmp  = cur_buffer;
+//			cur_buffer = next_buffer;
+//			next_buffer = tmp;
+//		}
+//
+//	}
+//
+//	clFinish (queue);
+//	monitoring_end_tile (0, 0, DIM, DIM, easypap_gpu_lane (TASK_TYPE_COMPUTE));
+//	return 0;
+//}
+//
+//void life_init_ocl (void)
+//{
+//
+//}
 
 
 ///////////////////////////// Sequential version (seq)
