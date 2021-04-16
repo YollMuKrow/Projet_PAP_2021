@@ -13,7 +13,7 @@ static unsigned color = 0xFFFF00FF; // Living cells have the yellow color
 typedef unsigned cell_t;
 
 static cell_t *restrict _table = NULL, *restrict _alternate_table = NULL;
-static bool *restrict _change_table = NULL, *restrict _alternate_change_table = NULL; //storing change variables
+static cell_t *restrict _change_table = NULL, *restrict _alternate_change_table = NULL; //storing change variables
 
 static unsigned tile_w_power, tile_h_power;
 
@@ -22,9 +22,9 @@ static inline cell_t *table_cell (cell_t *restrict i, int y, int x)
 	return i + y * DIM + x;
 }
 
-static inline bool *table_change (bool *restrict i, int y, int x)
+static inline cell_t *table_change (cell_t *restrict i, int y, int x)
 {
-	return i + y * NB_TILES_Y + x;
+	return i + (y+1) * NB_TILES_Y + (x+1); // +1 to each argument to account for the extra borders
 }
 
 // This kernel does not directly work on cur_img/next_img.
@@ -40,7 +40,7 @@ void life_init (void)
 	// already allocated
 	if (_table == NULL) {
 		const unsigned size = DIM * DIM * sizeof (cell_t);
-		const unsigned tiles = NB_TILES_X*NB_TILES_Y;
+		const unsigned tiles = (NB_TILES_X+2)*(NB_TILES_Y+2) * sizeof(cell_t); // We allocate extra borders
 		PRINT_DEBUG ('u', "Memory footprint = 2 x %d bytes\n", size);
 
 		_table = mmap (NULL, size, PROT_READ | PROT_WRITE,
@@ -55,17 +55,29 @@ void life_init (void)
 		_alternate_change_table = mmap (NULL, tiles, PROT_READ | PROT_WRITE,
 		                                MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 
+		for(unsigned tile_x = -1; tile_x <=NB_TILES_X; tile_x++){
+			for(unsigned tile_y = -1; tile_y <=NB_TILES_Y; tile_y++){
+				 cur_change_table(tile_x, tile_y) = 0;
+				next_change_table(tile_x, tile_y) = 0;
+			}
+		}
+		for(unsigned tile_x = 0; tile_x <NB_TILES_X; tile_x++){
+			for(unsigned tile_y = 0; tile_y <NB_TILES_Y; tile_y++){
+				cur_change_table(tile_x, tile_y) = 1;
+			}
+		}
+
 		//Tile_w_power and tile_h_power hold log2(TILE_W) and log2(TILE_H)
 		//they are used to quickly divide when we want to know in which tile a cell is
 		tile_w_power = 0;
-		while((0x1<<tile_w_power++) != TILE_W);
-		tile_w_power--; //Correct post-increment;
+		while((0x1<<tile_w_power) != TILE_W)
+			tile_w_power++;
 
-		tile_h_power = 1;
-		while((0x1<<tile_h_power++) != TILE_H);
-		tile_h_power--;
+		tile_h_power = 0;
+		while((0x1<<tile_h_power) != TILE_H)
+			tile_h_power++;
 
-		printf("Tiles = 2^%ux2^%u\n", tile_w_power, tile_h_power);
+		printf("Tiles = 2^%u×2^%u\n", tile_w_power, tile_h_power);
 	}
 }
 
@@ -111,6 +123,11 @@ static inline void swap_tables (void)
 
 	_table           = _alternate_table;
 	_alternate_table = tmp;
+	
+	tmp = _change_table;
+
+	_change_table = _alternate_change_table;
+	_alternate_change_table = tmp;
 }
 
 ///////////////////////////// Sequential version (seq)
@@ -323,7 +340,7 @@ unsigned life_compute_tiled_omp_for_inner_opt (unsigned nb_iter)
 
 	for (unsigned it = 1; it <= nb_iter; it++) {
 		unsigned change = 0;
-#pragma omp parallel
+#pragma omp parallel shared(change)
 		{
 			//Outer loops
 			//0xxxxxxx0
@@ -335,30 +352,38 @@ unsigned life_compute_tiled_omp_for_inner_opt (unsigned nb_iter)
 
 #pragma omp for nowait schedule(static)
 			for(int y = TILE_H; y<(DIM-TILE_H); y+=TILE_H){
+				#pragma omp atomic
 				change |= do_inner_tile(         1, y, TILE_W-1, TILE_H, omp_get_thread_num());
+				#pragma omp atomic
 				change |= do_inner_tile(DIM-TILE_W, y, TILE_W-1, TILE_H, omp_get_thread_num());
 			}
 
 #pragma omp for nowait schedule(static)
 			for(int x = TILE_W; x<(DIM-TILE_W); x+=TILE_W){
+				#pragma omp atomic
 				change |= do_inner_tile(x,          1, TILE_W, TILE_H-1, omp_get_thread_num());
+				#pragma omp atomic
 				change |= do_inner_tile(x, DIM-TILE_H, TILE_W, TILE_H-1, omp_get_thread_num());
 			}
 
 			//Top left corner
-#pragma omp single
+			#pragma omp single
+			#pragma omp atomic
 			change |= do_inner_tile(         1,          1, TILE_W-1, TILE_H-1, omp_get_thread_num());
 
 			//Bottom left corner
-#pragma omp single
+			#pragma omp single
+			#pragma omp atomic
 			change |= do_inner_tile(         1, DIM-TILE_H, TILE_W-1, TILE_H-1, omp_get_thread_num());
 
 			//Top right corner
-#pragma omp single
+			#pragma omp single
+			#pragma omp atomic
 			change |= do_inner_tile(DIM-TILE_W,          1, TILE_W-1, TILE_H-1, omp_get_thread_num());
 
 			//Bottom right corner
-#pragma omp single
+			#pragma omp single
+			#pragma omp atomic
 			change |= do_inner_tile(DIM-TILE_W, DIM-TILE_H, TILE_W-1, TILE_H-1, omp_get_thread_num());
 
 			//Inner loop
@@ -368,9 +393,10 @@ unsigned life_compute_tiled_omp_for_inner_opt (unsigned nb_iter)
 			//0xxxxxxx0
 			//0xxxxxxx0
 			//000000000
-#pragma omp for collapse(2) schedule(static)
+			#pragma omp for collapse(2) schedule(static)
 			for(int y=TILE_H; y<(DIM-TILE_H); y+=TILE_H){
 				for(int x=TILE_W; x<(DIM-TILE_W); x+=TILE_W){
+					#pragma omp atomic
 					change |= do_inner_tile(x, y, TILE_W, TILE_H, omp_get_thread_num());
 				}
 			}
@@ -521,16 +547,41 @@ unsigned life_compute_tiled_omp_for_inner_opt (unsigned nb_iter)
  * Update all tiles that changed during the last iteration, or
  * those that are adjacent (corners included) to tiles that have changed
  * Based on inner_opt to minimize branching
- * TO FINISH
+ * TODO
  */
+
+bool tile_needs_update(unsigned tile_x, unsigned tile_y){
+	bool update = 	cur_change_table(tile_x	 , tile_y	)
+				||	cur_change_table(tile_x+1, tile_y	)
+				||	cur_change_table(tile_x-1, tile_y	)
+				||	cur_change_table(tile_x	 , tile_y+1	)
+				||	cur_change_table(tile_x+1, tile_y+1	)
+				||	cur_change_table(tile_x-1, tile_y+1	)
+				||	cur_change_table(tile_x	 , tile_y-1	)
+				||	cur_change_table(tile_x+1, tile_y-1	)
+				||	cur_change_table(tile_x-1, tile_y-1	);
+	if(!update){
+		//PRINT_MASTER("Tile at %2u, %2u doesn't need updating\n", tile_x, tile_y);
+	}
+	return 	update;
+}
+
+void print_change_table(){
+	for(unsigned y = 0; y<NB_TILES_Y; y++){
+		for(unsigned x = 0; x<NB_TILES_X; x++){
+			printf("%c",  cur_change_table(y, x)?'#':' ');
+		}
+		printf("\n");
+	}
+}
+
 //test OMP_NUM_THREADS=46 OMP_PLACES=cores ./run -k life -n -i 100 -a random -s 2048 -v lazy -th 16 -tw 16 -> 134.776
 unsigned life_compute_lazy(unsigned nb_iter)
 {
 	unsigned res = 0;
-
 	for (unsigned it = 1; it <= nb_iter; it++) {
 		unsigned change = 0;
-#pragma omp parallel
+		#pragma omp parallel
 		{
 			//Outer loops
 			//0xxxxxxx0
@@ -540,44 +591,35 @@ unsigned life_compute_lazy(unsigned nb_iter)
 			//y       y
 			//0xxxxxxx0
 
-#pragma omp for nowait schedule(static)
-			for(int y = TILE_H; y<(DIM-TILE_H); y+=TILE_H) {
-				for (int x = TILE_W; x < (DIM - TILE_W); x += TILE_W) {
-//					if (cur_change_table((x >> tile_w_power)       , (y >> tile_h_power))
-//					    || cur_change_table((x >> tile_w_power) - 1, (y >> tile_h_power))
-//					    || cur_change_table((x >> tile_w_power)    , (y >> tile_h_power) - 1)
-//					    || cur_change_table((x >> tile_w_power) - 1, (y >> tile_h_power) - 1)
-//					    || cur_change_table((x >> tile_w_power) + 1, (y >> tile_h_power))
-//					    || cur_change_table((x >> tile_w_power)    , (y >> tile_h_power) + 1)
-//					    || cur_change_table((x >> tile_w_power) + 1, (y >> tile_h_power) + 1)
-//					    || cur_change_table((x >> tile_w_power) - 1, (y >> tile_h_power) + 1)
-//					    || cur_change_table((x >> tile_w_power) + 1, (y >> tile_h_power) - 1))
-					next_change_table(1, y) = do_inner_tile(1, y, TILE_W - 1, TILE_H, omp_get_thread_num());
-					next_change_table(1, y) = do_inner_tile(DIM - TILE_W, y, TILE_W - 1, TILE_H, omp_get_thread_num());
-				}
+			#pragma omp for nowait schedule(static)
+			for(int y = TILE_H; y < (DIM-TILE_H); y += TILE_H){
+				unsigned tile_y = y>>tile_h_power;
+				next_change_table(0, tile_y) 			= tile_needs_update(0, tile_y) && do_inner_tile(         1, y, TILE_W-1, TILE_H, omp_get_thread_num());
+				next_change_table(NB_TILES_X-1, tile_y) = tile_needs_update(NB_TILES_X-1, tile_y) && do_inner_tile(DIM-TILE_W, y, TILE_W-1, TILE_H, omp_get_thread_num());
 			}
 
-#pragma omp for nowait schedule(static)
+			#pragma omp for nowait schedule(static)
 			for(int x = TILE_W; x<(DIM-TILE_W); x+=TILE_W){
-				change |= do_inner_tile(x,          1, TILE_W, TILE_H-1, omp_get_thread_num());
-				change |= do_inner_tile(x, DIM-TILE_H, TILE_W, TILE_H-1, omp_get_thread_num());
+				unsigned tile_x = x>>tile_w_power;
+				next_change_table(tile_x, 0) 			= tile_needs_update(tile_x, 0) && do_inner_tile(x,          1, TILE_W, TILE_H-1, omp_get_thread_num());
+				next_change_table(tile_x, NB_TILES_Y-1) = tile_needs_update(tile_x, NB_TILES_Y-1) && do_inner_tile(x, DIM-TILE_H, TILE_W, TILE_H-1, omp_get_thread_num());
 			}
 
 			//Top left corner
-#pragma omp single
-			change |= do_inner_tile(         1,          1, TILE_W-1, TILE_H-1, omp_get_thread_num());
+			#pragma omp single
+			next_change_table(0, 0) = tile_needs_update(0, 0) && do_inner_tile( 1, 1, TILE_W-1, TILE_H-1, omp_get_thread_num());
 
 			//Bottom left corner
-#pragma omp single
-			change |= do_inner_tile(         1, DIM-TILE_H, TILE_W-1, TILE_H-1, omp_get_thread_num());
+			#pragma omp single
+			next_change_table(0, NB_TILES_Y-1) = tile_needs_update(0, NB_TILES_Y-1) && do_inner_tile( 1, DIM-TILE_H, TILE_W-1, TILE_H-1, omp_get_thread_num());
 
 			//Top right corner
-#pragma omp single
-			change |= do_inner_tile(DIM-TILE_W,          1, TILE_W-1, TILE_H-1, omp_get_thread_num());
+			#pragma omp single
+			next_change_table(NB_TILES_X-1, 0) = tile_needs_update(NB_TILES_X-1, 0) && do_inner_tile(DIM-TILE_W, 1, TILE_W-1, TILE_H-1, omp_get_thread_num());
 
 			//Bottom right corner
-#pragma omp single
-			change |= do_inner_tile(DIM-TILE_W, DIM-TILE_H, TILE_W-1, TILE_H-1, omp_get_thread_num());
+			#pragma omp single
+			next_change_table(NB_TILES_X-1, NB_TILES_Y-1) = tile_needs_update(NB_TILES_X-1, NB_TILES_Y-1) && do_inner_tile(DIM-TILE_W, DIM-TILE_H, TILE_W-1, TILE_H-1, omp_get_thread_num());
 
 			//Inner loop
 			//000000000
@@ -586,20 +628,23 @@ unsigned life_compute_lazy(unsigned nb_iter)
 			//0xxxxxxx0
 			//0xxxxxxx0
 			//000000000
-#pragma omp for collapse(2) schedule(static)
+			#pragma omp for collapse(2) schedule(static)
 			for(int y=TILE_H; y<(DIM-TILE_H); y+=TILE_H){
 				for(int x=TILE_W; x<(DIM-TILE_W); x+=TILE_W){
-					change |= do_inner_tile(x, y, TILE_W, TILE_H, omp_get_thread_num());
+					unsigned tile_y = y>>tile_h_power;
+					unsigned tile_x = x>>tile_w_power;
+					next_change_table(tile_x, tile_y) = tile_needs_update(tile_x, tile_y) && do_inner_tile(x, y, TILE_W, TILE_H, omp_get_thread_num());
 				}
 			}
 		} // omp parallel
 		swap_tables ();
-
+		change = true; //FIXME
 		if (!change) { // we stop when all cells are stable
 			res = it;
 			break;
 		}
 	}
+
 	return res;
 }
 
