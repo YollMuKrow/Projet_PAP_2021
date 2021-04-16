@@ -102,7 +102,7 @@ void do_touch_tile(int x, int y, int width, int height, int who)
 void life_ft(void){
 #pragma omp parallel
 	{
-#pragma omp for collapse(2) schedule(runtime)
+#pragma omp for collapse(2) schedule(static)
 		for(int y = 0; y < DIM; y+=TILE_W)
 			for (int x = 0; x < DIM; x += TILE_W)
 				do_touch_tile(x, y, TILE_W, TILE_H, omp_get_thread_num());
@@ -129,6 +129,20 @@ static inline void swap_tables (void)
 	_change_table = _alternate_change_table;
 	_alternate_change_table = tmp;
 }
+
+
+///////////////////////////// refresh function for ocl file
+// Only called when --dump or --thumbnails is used
+void life_refresh_img_ocl (void)
+{
+    cl_int err;
+    err = clEnqueueReadBuffer (queue, cur_buffer, CL_TRUE, 0,
+                               sizeof(unsigned)*DIM*DIM, _table, 0, NULL,
+                               NULL);
+    check (err, "Failed to read buffer from GPU");
+    life_refresh_img ();
+}
+
 
 ///////////////////////////// Sequential version (seq)
 
