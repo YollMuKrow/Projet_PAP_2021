@@ -65,6 +65,20 @@ static inline void swap_tables (void)
     _alternate_table = tmp;
 }
 
+///////////////////////////OCL version
+
+void life_refresh_img_ocl (void){
+	cl_int err;
+
+	err = clEnqueueReadBuffer(queue, cur_buffer, CL_TRUE, 0,
+	                           sizeof (unsigned) * DIM * DIM, _table, 0, NULL,
+	                           NULL);
+	check(err, "Failed to read buffer from GPU");
+	life_refresh_img ();
+}
+
+
+
 ///////////////////////////// Sequential version (seq)
 
 static int compute_new_state (int y, int x)
