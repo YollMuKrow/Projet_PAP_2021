@@ -131,7 +131,7 @@ unsigned life_invoke_ocl_finish (unsigned nb_iter)
         }
         printf("salut j'ai fini\n");
         err = clEnqueueReadBuffer(queue, change_buffer, CL_TRUE, 0,
-                                  sizeof (unsigned), &change_buffer_value, 0, NULL,
+                                  sizeof (unsigned), change_buffer_value, 0, NULL,
                                   NULL);
         check(err, "Failed to read change buffer from GPU");
         if(change_buffer_value[0]==1)
