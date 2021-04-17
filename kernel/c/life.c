@@ -69,7 +69,7 @@ static inline void swap_tables (void)
 
 ///////////////////////////OCL version
 static cl_mem change_buffer = 0;
-unsigned *change_buffer_value;
+unsigned change_buffer_value[1];
 
 void life_refresh_img_ocl_finish (void){
     cl_int err;
