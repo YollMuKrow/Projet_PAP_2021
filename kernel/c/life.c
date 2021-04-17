@@ -66,8 +66,6 @@ static inline void swap_tables (void)
 }
 
 ///////////////////////////OCL version
-
-///////////////////////////OCL version
 static cl_mem change_buffer, reset_buffer = 0;
 
 void life_refresh_img_ocl_finish (void){
