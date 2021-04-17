@@ -82,7 +82,6 @@ void life_refresh_img_ocl_finish (void){
 
 void life_refresh_img_ocl (void){
     cl_int err;
-    printf("hi\n");
     err = clEnqueueReadBuffer(queue, cur_buffer, CL_TRUE, 0,
                               sizeof (unsigned) * DIM * DIM, _table, 0, NULL,
                               NULL);
@@ -114,7 +113,6 @@ unsigned life_invoke_ocl_finish (unsigned nb_iter)
 
     for (unsigned it = 1; it <= nb_iter; it++) {
         change_buffer_value[0] = 0;
-        printf("change init ite %u = %u\n", it, change_buffer_value[0]);
 
         err = 0;
         err |= clSetKernelArg(compute_kernel, 0, sizeof(cl_mem), &cur_buffer);
