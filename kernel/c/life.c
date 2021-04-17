@@ -92,10 +92,10 @@ void life_refresh_img_ocl (void){
 
 void life_init_ocl_finish (void)
 {
-    life_init();
     change_buffer = clCreateBuffer (context, CL_MEM_READ_WRITE, sizeof (unsigned), NULL, NULL);
     if (!change_buffer)
         exit_with_error ("Failed to allocate change buffer");
+    life_init();
 }
 
 unsigned life_invoke_ocl_finish (unsigned nb_iter)
@@ -114,6 +114,8 @@ unsigned life_invoke_ocl_finish (unsigned nb_iter)
 
     for (unsigned it = 1; it <= nb_iter; it++) {
         change_buffer_value[0] = 0;
+        printf("change init ite %u = %u\n", it, change_buffer_value[0]);
+
         err = 0;
         err |= clSetKernelArg(compute_kernel, 0, sizeof(cl_mem), &cur_buffer);
         err |= clSetKernelArg(compute_kernel, 1, sizeof(cl_mem), &next_buffer);
