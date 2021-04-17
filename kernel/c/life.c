@@ -86,7 +86,7 @@ void life_refresh_img_ocl (void){
 void life_init_ocl (void)
 {
     change_buffer = clCreateBuffer (context, CL_MEM_WRITE_ONLY, sizeof (unsigned), NULL, NULL);
-    if (!mask_buffer)
+    if (!change_buffer)
         exit_with_error ("Failed to allocate change buffer");
 }
 
