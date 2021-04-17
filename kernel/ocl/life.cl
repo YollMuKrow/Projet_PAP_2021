@@ -39,7 +39,7 @@ __kernel void life_ocl_tile (__global unsigned *in, __global unsigned *out)
 				in[(y+1)*DIM + x-1] + in[(y+1)*DIM + x] + in[(y+1)*DIM + x + 1]);
 		//printf("n = %u, value = %u, x = %u, y = %u\n", n, in[y*DIM + x], x, y);
 		n = (n == 3 + in[y*DIM + x]) | (n == 3);
-		printf("groupx = %u groupy = %u\n", xgroup, ygroup);
+		//printf("groupx = %u groupy = %u\n", xgroup, ygroup);
 		out[y*DIM + x] = n ;
 	}
 }
