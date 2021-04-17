@@ -32,7 +32,7 @@ __kernel void life_ocl_tile (__global unsigned *in, __global unsigned *out)
 	unsigned ygroup = get_group_id (1);
     __local unsigned tile [GPU_TILE_H][GPU_TILE_W];
 
-    printf("local_size x = %u,local_size x = %u\n",get_local_size(0),get_local_size(1));
+    printf("local_size x = %u,local_size y = %u, group_size y = %u, group_size x= %u\n",get_local_size(0),get_local_size(1),GPU_TILE_H, GPU_TILE_W);
 
 //    tile[x][y] = in[y*DIM+x];
 //
