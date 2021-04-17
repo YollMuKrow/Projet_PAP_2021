@@ -122,6 +122,7 @@ unsigned life_invoke_ocl_finish (unsigned nb_iter)
         err |= clSetKernelArg(compute_kernel, 2, sizeof(cl_mem), &change_buffer);
         check(err, "Failed to set kernel arguments");
 
+        printf("change mid ite %u = %u\n", it, change_buffer_value[0]);
         err = clEnqueueNDRangeKernel(queue, compute_kernel, 2, NULL, global, local,
                                      0, NULL, NULL);
         check(err, "Failed to execute kernel");
