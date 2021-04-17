@@ -27,6 +27,9 @@ __kernel void life_ocl_tile (__global unsigned *in, __global unsigned *out)
 	unsigned y = get_global_id (1);
 	unsigned xloc = get_local_id (0);
 	unsigned yloc = get_local_id (1);
+	unsigned xgroup = get_group_id (0);
+	unsigned ygroup = get_group_id (1);
+
 
 	__local unsigned n;
 
@@ -36,7 +39,7 @@ __kernel void life_ocl_tile (__global unsigned *in, __global unsigned *out)
 				in[(y+1)*DIM + x-1] + in[(y+1)*DIM + x] + in[(y+1)*DIM + x + 1]);
 		//printf("n = %u, value = %u, x = %u, y = %u\n", n, in[y*DIM + x], x, y);
 		n = (n == 3 + in[y*DIM + x]) | (n == 3);
-		//printf("n new = %u\n", n);
+		printf("groupx = %u groupy = %u\n", xgroup, ygroup);
 		out[y*DIM + x] = n ;
 	}
 }
