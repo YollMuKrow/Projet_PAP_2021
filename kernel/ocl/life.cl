@@ -35,13 +35,12 @@ __kernel void life_ocl_finish (__global unsigned *in, __global unsigned *out, __
 
     }
     if(out[y*DIM + x] != in[y*DIM + x]){
-        //printf("changement");
+        printf("changement");
         change[0]=1;
     }
-    else{
-        for(int i = 0; i < 10000; i++)
-            tmp = tmp + i;
-    }
+    //else{
+        //printf("changement");
+    //}
 }
 
 
