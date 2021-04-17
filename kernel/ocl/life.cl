@@ -32,8 +32,8 @@ __kernel void life_ocl_finish (__global unsigned *in, __global unsigned *out, __
         if(n != in[y*DIM + x]){
             change[0]=1;
         }
-        barrier(CLK_LOCAL_MEM_FENCE);
         out[y*DIM + x] = n;
+        barrier(CLK_LOCAL_MEM_FENCE);
     }
 }
 
