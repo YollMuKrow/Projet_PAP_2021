@@ -66,64 +66,75 @@ static inline void swap_tables (void)
 }
 
 ///////////////////////////OCL version
+
+///////////////////////////OCL version
 static cl_mem change_buffer = 0;
 unsigned *change_buffer_value;
 
-void life_refresh_img_ocl (void){
-	cl_int err;
+void life_refresh_img_ocl_finish (void){
+    cl_int err;
 
-	err = clEnqueueReadBuffer(queue, cur_buffer, CL_TRUE, 0,
-	                           sizeof (unsigned) * DIM * DIM, _table, 0, NULL,
-	                           NULL);
-    check(err, "Failed to read cur buffer from GPU");
-    err = clEnqueueReadBuffer(queue, change_buffer, CL_TRUE, 0,
-                              sizeof (unsigned), change_buffer_value, 0, NULL,
+    err = clEnqueueReadBuffer(queue, cur_buffer, CL_TRUE, 0,
+                              sizeof (unsigned) * DIM * DIM, _table, 0, NULL,
                               NULL);
-	check(err, "Failed to read change buffer from GPU");
-	life_refresh_img ();
+    check(err, "Failed to read cur buffer from GPU");
+    life_refresh_img ();
 }
 
-void life_init_ocl (void)
+void life_refresh_img_ocl (void){
+    cl_int err;
+
+    err = clEnqueueReadBuffer(queue, cur_buffer, CL_TRUE, 0,
+                              sizeof (unsigned) * DIM * DIM, _table, 0, NULL,
+                              NULL);
+    check(err, "Failed to read cur buffer from GPU");
+    life_refresh_img ();
+}
+
+void life_init_ocl_finish (void)
 {
     change_buffer = clCreateBuffer (context, CL_MEM_WRITE_ONLY, sizeof (unsigned), NULL, NULL);
     if (!change_buffer)
         exit_with_error ("Failed to allocate change buffer");
 }
 
-unsigned life_invoke_ocl (unsigned nb_iter)
+unsigned life_invoke_ocl_finish (unsigned nb_iter)
 {
-	size_t global[2] = {GPU_SIZE_X, GPU_SIZE_Y};
-	size_t local[2]  = {GPU_TILE_W, GPU_TILE_H};
-	cl_int err;
+    size_t global[2] = {GPU_SIZE_X, GPU_SIZE_Y};
+    size_t local[2]  = {GPU_TILE_W, GPU_TILE_H};
+    cl_int err;
 
-	monitoring_start_tile (easypap_gpu_lane (TASK_TYPE_COMPUTE));
+    monitoring_start_tile (easypap_gpu_lane (TASK_TYPE_COMPUTE));
 
-	for (unsigned it = 1; it <= nb_iter; it++) {
+    for (unsigned it = 1; it <= nb_iter; it++) {
+
+        err = 0;
+        err |= clSetKernelArg (compute_kernel, 0, sizeof (cl_mem), &cur_buffer);
+        err |= clSetKernelArg (compute_kernel, 1, sizeof (cl_mem), &next_buffer);
+        err |= clSetKernelArg (compute_kernel, 2, sizeof (cl_mem), &change_buffer);
+        check (err, "Failed to set kernel arguments");
+
+        err = clEnqueueNDRangeKernel (queue, compute_kernel, 2, NULL, global, local,
+                                      0, NULL, NULL);
+        check (err, "Failed to execute kernel");
+
+        {
+            cl_mem tmp  = cur_buffer;
+            cur_buffer = next_buffer;
+            next_buffer = tmp;
+        }
+        err = clEnqueueReadBuffer(queue, change_buffer, CL_TRUE, 0,
+                                  sizeof (unsigned), change_buffer_value, 0, NULL,
+                                  NULL);
+        check(err, "Failed to read change buffer from GPU");
         if(change_buffer_value[0]==1)
             break;
-	    err = 0;
-		err |= clSetKernelArg (compute_kernel, 0, sizeof (cl_mem), &cur_buffer);
-		err |= clSetKernelArg (compute_kernel, 1, sizeof (cl_mem), &next_buffer);
-        err |= clSetKernelArg (compute_kernel, 2, sizeof (cl_mem), &change_buffer);
-		check (err, "Failed to set kernel arguments");
+    }
 
-		err = clEnqueueNDRangeKernel (queue, compute_kernel, 2, NULL, global, local,
-		                              0, NULL, NULL);
-		check (err, "Failed to execute kernel");
-
-		{
-			cl_mem tmp  = cur_buffer;
-			cur_buffer = next_buffer;
-			next_buffer = tmp;
-		}
-	}
-
-	clFinish (queue);
-	monitoring_end_tile (0, 0, DIM, DIM, easypap_gpu_lane (TASK_TYPE_COMPUTE));
-	return 0;
+    clFinish (queue);
+    monitoring_end_tile (0, 0, DIM, DIM, easypap_gpu_lane (TASK_TYPE_COMPUTE));
+    return 0;
 }
-
-
 
 
 ///////////////////////////// Sequential version (seq)
