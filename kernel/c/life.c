@@ -69,7 +69,6 @@ static inline void swap_tables (void)
 
 ///////////////////////////OCL version
 static cl_mem change_buffer = 0;
-unsigned change_buffer_value[1];
 
 void life_refresh_img_ocl_finish (void){
     cl_int err;
@@ -104,6 +103,11 @@ unsigned life_invoke_ocl_finish (unsigned nb_iter)
     size_t local[2]  = {GPU_TILE_W, GPU_TILE_H};
     cl_int err;
 
+    unsigned *change_buffer_value = malloc(sizeof (unsigned));
+    if (change_buffer_value == NULL){
+        printf("Echec de l'initialisation du malloc !\n");
+        return EXIT_FAILURE;
+    }
     monitoring_start_tile (easypap_gpu_lane (TASK_TYPE_COMPUTE));
 
     for (unsigned it = 1; it <= nb_iter; it++) {
@@ -124,7 +128,7 @@ unsigned life_invoke_ocl_finish (unsigned nb_iter)
             next_buffer = tmp;
         }
         err = clEnqueueReadBuffer(queue, change_buffer, CL_TRUE, 0,
-                                  sizeof (unsigned), change_buffer_value, 0, NULL,
+                                  sizeof (unsigned), &change_buffer_value, 0, NULL,
                                   NULL);
         check(err, "Failed to read change buffer from GPU");
         if(change_buffer_value[0]==1)
