@@ -109,9 +109,7 @@ unsigned life_invoke_ocl_finish (unsigned nb_iter)
         printf("Echec de l'initialisation du malloc !\n");
         return EXIT_FAILURE;
     }
-    printf("change 1 = %u\n", change_buffer_value[0]);
-    change_buffer_value[0] = 1;
-    printf("change 2 = %u\n", change_buffer_value[0]);
+    change_buffer_value[0] = 3;
 
     monitoring_start_tile (easypap_gpu_lane (TASK_TYPE_COMPUTE));
 
@@ -138,7 +136,7 @@ unsigned life_invoke_ocl_finish (unsigned nb_iter)
                                   NULL);
         check(err, "Failed to read change buffer from GPU");
 
-        if (change_buffer_value[0] == 0){
+        if (change_buffer_value[0] == 4){
             printf("on s'arrete à %u iteration\n", it);
             break;
         }
