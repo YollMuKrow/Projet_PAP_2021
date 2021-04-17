@@ -19,7 +19,7 @@ static unsigned tile_w_power, tile_h_power;
 
 static inline cell_t *table_cell (cell_t *restrict i, int y, int x)
 {
-    return i + y * DIM + x;
+    return i + (y+1) * DIM + (x+1); // +1 to each argument to account for the extra borders
 }
 
 static inline cell_t *table_change (cell_t *restrict i, int y, int x)
@@ -39,7 +39,7 @@ void life_init (void)
     // life_init may be (indirectly) called several times so we check if data were
     // already allocated
     if (_table == NULL) {
-        const unsigned size = DIM * DIM * sizeof (cell_t);
+        const unsigned size = (DIM+2) * (DIM+2) * sizeof (cell_t);  //Allocating extra borders for vec version
         const unsigned tiles = (NB_TILES_X+2)*(NB_TILES_Y+2) * sizeof(cell_t); // We allocate extra borders
         PRINT_DEBUG ('u', "Memory footprint = 2 x (%d+%d)= %d bytes\n", size,tiles,(size+tiles)*2);
 
@@ -662,6 +662,224 @@ unsigned life_compute_lazy(unsigned nb_iter)
 }
 
 
+bool tile_needs_update_opt(unsigned tile_x, unsigned tile_y){
+    return  cur_change_table(tile_x	 , tile_y	)
+        ||	cur_change_table(tile_x+1, tile_y	)
+        ||	cur_change_table(tile_x-1, tile_y	)
+        ||	cur_change_table(tile_x	 , tile_y+1	)
+        ||	cur_change_table(tile_x+1, tile_y+1	)
+        ||	cur_change_table(tile_x-1, tile_y+1	)
+        ||	cur_change_table(tile_x	 , tile_y-1	)
+        ||	cur_change_table(tile_x+1, tile_y-1	)
+        ||	cur_change_table(tile_x-1, tile_y-1	);
+}
+
+static inline cell_t do_tile_and_update_change_opt(unsigned x, unsigned y, unsigned w, unsigned h, unsigned who){
+    unsigned tile_x = x >> tile_w_power;
+    unsigned tile_y = y >> tile_h_power;
+    return next_change_table(tile_x, tile_y) = tile_needs_update_opt(tile_x, tile_y) && do_inner_tile(x, y, w, h, who);
+}
+
+unsigned life_compute_lazy_opt(unsigned nb_iter)
+{
+    unsigned res = 0;
+    for (unsigned it = 1; it <= nb_iter; it++) {
+        unsigned change = 0;
+        #pragma omp parallel
+        {
+            //Outer loops
+            // xxxxxxx 
+            //y       y
+            //y       y
+            //y       y
+            //y       y
+            // xxxxxxx 
+
+            #pragma omp for nowait schedule(static)
+            for(int y = TILE_H; y < (DIM-TILE_H); y += TILE_H){
+                do_tile_and_update_change_opt(		  1, y, TILE_W-1, TILE_H, omp_get_thread_num());
+                do_tile_and_update_change_opt(DIM-TILE_W, y, TILE_W-1, TILE_H, omp_get_thread_num());
+            }
+
+            #pragma omp for nowait schedule(static)
+            for(int x = TILE_W; x<(DIM-TILE_W); x+=TILE_W){
+                do_tile_and_update_change_opt(x,          1, TILE_W, TILE_H-1, omp_get_thread_num());
+                do_tile_and_update_change_opt(x, DIM-TILE_H, TILE_W, TILE_H-1, omp_get_thread_num());
+            }
+
+            //Top left corner
+            #pragma omp single
+            do_tile_and_update_change_opt( 1, 1, TILE_W-1, TILE_H-1, omp_get_thread_num());
+
+            //Bottom left corner
+            #pragma omp single
+            do_tile_and_update_change_opt( 1, DIM-TILE_H, TILE_W-1, TILE_H-1, omp_get_thread_num());
+
+            //Top right corner
+            #pragma omp single
+            do_tile_and_update_change_opt(DIM-TILE_W, 1, TILE_W-1, TILE_H-1, omp_get_thread_num());
+
+            //Bottom right corner
+            #pragma omp single
+            do_tile_and_update_change_opt(DIM-TILE_W, DIM-TILE_H, TILE_W-1, TILE_H-1, omp_get_thread_num());
+
+            //Inner loop
+            //000000000
+            //0xxxxxxx0
+            //0xxxxxxx0
+            //0xxxxxxx0
+            //0xxxxxxx0
+            //000000000
+            #pragma omp for collapse(2) schedule(static)
+            for(int y=TILE_H; y<(DIM-TILE_H); y+=TILE_H){
+                for(int x=TILE_W; x<(DIM-TILE_W); x+=TILE_W){
+                    do_tile_and_update_change_opt(x, y, TILE_W, TILE_H, omp_get_thread_num());
+                }
+            }
+        } // omp parallel
+        swap_tables ();
+        change = true; //FIXME
+        if (!change) { // we stop when all cells are stable
+            res = it;
+            break;
+        }
+    }
+
+    return res;
+}
+
+
+// VECTORIZED VERSION
+#if defined(ENABLE_VECTO) && (VEC_SIZE_INT == 8)
+#include <immintrin.h>
+
+static int do_tile_vec(unsigned x, unsigned y, unsigned w, unsigned h, unsigned cpu);
+int compute_multiple_cells(int x, int y);
+
+unsigned life_compute_vec(unsigned nb_iter){
+    unsigned res = 0;
+	for (unsigned it = 1; it <= nb_iter; it++) {
+		unsigned change = 0;
+        for (int y = 0; y < DIM; y += TILE_H)
+            for (int x = 0; x < DIM; x += TILE_W){
+                change |= do_tile_vec (x, y, TILE_W, TILE_H, omp_get_thread_num());
+            }
+		swap_tables ();
+
+		if (!change) { // we stop when all cells are stable
+			res = it;
+			break;
+		}
+	}
+
+	return res;
+}
+
+static int do_tile_vec(unsigned x, unsigned y, unsigned w, unsigned h, unsigned cpu){
+    int change = 0;
+    monitoring_start_tile (cpu);
+    for(int i = 0; i<h; i++){ //Loop lines
+        for(int j = 0; j<w; j+=VEC_SIZE_INT){ //Loop columns
+            change |= compute_multiple_cells(x+j, y+i);
+        }
+    }
+    monitoring_end_tile (x, y, w, h, cpu);
+    return change;
+}
+
+int compute_multiple_cells(int x, int y){
+    __m256i full   = _mm256_set1_epi32(0xFFFFffff); //32 bits to 1
+    __m256i one    = _mm256_set1_epi32(1);
+
+    __m256i cells   = _mm256_maskload_epi32((int*)&cur_table(y,x), full); //Current cells value
+
+    __m256i top     = _mm256_maskload_epi32((int*)&cur_table(y-1, x), full);
+    __m256i bot     = _mm256_maskload_epi32((int*)&cur_table(y+1, x), full);
+    __m256i right   = _mm256_maskload_epi32((int*)&cur_table(y, x+1), full);
+    __m256i left    = _mm256_maskload_epi32((int*)&cur_table(y, x-1), full);
+
+    __m256i topright    = _mm256_maskload_epi32((int*)&cur_table(y-1, x+1), full);
+    __m256i botright    = _mm256_maskload_epi32((int*)&cur_table(y+1, x+1), full);
+    __m256i topleft     = _mm256_maskload_epi32((int*)&cur_table(y-1, x-1), full);
+    __m256i botleft     = _mm256_maskload_epi32((int*)&cur_table(y+1, x-1), full);
+
+    __m256i sum = _mm256_add_epi32(
+                    _mm256_add_epi32(
+                        _mm256_add_epi32(top,bot),
+                        _mm256_add_epi32(right,left)),
+                    _mm256_add_epi32(
+                        _mm256_add_epi32(topright,topleft),
+                        _mm256_add_epi32(botright,botleft))
+                    ); //Number of alive neighbours of each cell
+    
+    //Contains cells that are born (even if already alive) this iteration
+    __m256i alive = _mm256_and_si256(_mm256_cmpeq_epi32(_mm256_add_epi32(sum, cells), _mm256_set1_epi32(3)), one);
+
+    //Contain cells that didn't change this iteration
+    __m256i same  = _mm256_and_si256(_mm256_cmpeq_epi32(_mm256_add_epi32(sum, cells), _mm256_set1_epi32(4)), one);
+    
+    //cell = alive | same&cell
+    __m256i result = _mm256_or_si256(alive, _mm256_and_si256(same, cells));
+    _mm256_maskstore_epi32((int*)&next_table(y,x),full,result); //Copy the result vector into memory
+
+    return _mm256_movemask_epi8(_mm256_cmpeq_epi32(cells, result)) != 0xFFFFffffU; //Test for equality, flip the output
+}
+
+
+unsigned life_compute_tiled_omp_for_vec (unsigned nb_iter)
+{
+    unsigned res = 0;
+
+    for (unsigned it = 1; it <= nb_iter; it++) {
+        unsigned change = 0;
+        #pragma omp parallel shared(change)
+        {
+            #pragma omp for collapse(2) schedule(static)
+            for(int y=0; y<(DIM-TILE_H); y+=TILE_H){
+                for(int x=0; x<(DIM-TILE_W); x+=TILE_W){
+                    #pragma omp atomic
+                    change |= do_tile_vec(x, y, TILE_W, TILE_H, omp_get_thread_num());
+                }
+            }
+        } // omp parallel
+        swap_tables ();
+
+        if (!change) { // we stop when all cells are stable
+            res = it;
+            break;
+        }
+    }
+
+    return res;
+}
+
+unsigned life_compute_omp_for_lazy_vec(unsigned nb_iter)
+{
+    unsigned res = 0;
+
+    for (unsigned it = 1; it <= nb_iter; it++) {
+        #pragma omp parallel
+        {
+            #pragma omp for collapse(2) schedule(static)
+            for(int y=0; y<(DIM-TILE_H); y+=TILE_H){
+                for(int x=0; x<(DIM-TILE_W); x+=TILE_W){
+                    unsigned tile_x = x >> tile_w_power;
+                    unsigned tile_y = y >> tile_h_power;
+                    next_change_table(tile_x, tile_y) = tile_needs_update(tile_x, tile_y) && do_tile_vec(x, y, TILE_W, TILE_H, omp_get_thread_num());
+                }
+            }
+        } // omp parallel
+        swap_tables ();
+
+        /*if (!change) { // we stop when all cells are stable
+            res = it;
+            break;
+        }*/
+    }
+
+    return res;
+}
+#endif
 ///////////////////////////// Initial configs
 
 void life_draw_guns (void);
