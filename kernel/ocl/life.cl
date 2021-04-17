@@ -39,7 +39,7 @@ __kernel void life_ocl_finish (__global unsigned *in, __global unsigned *out, __
         change[0]=1;
     }
     else{
-        for(int i = 0; i < 10; i++)
+        for(int i = 0; i < 100; i++)
             tmp+=1;
     }
 }
