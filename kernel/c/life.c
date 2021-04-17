@@ -113,7 +113,7 @@ unsigned life_invoke_ocl_finish (unsigned nb_iter)
     monitoring_start_tile (easypap_gpu_lane (TASK_TYPE_COMPUTE));
 
     for (unsigned it = 1; it <= nb_iter; it++) {
-
+        change_buffer_value[0]=1;
         err = 0;
         err |= clSetKernelArg(compute_kernel, 0, sizeof(cl_mem), &cur_buffer);
         err |= clSetKernelArg(compute_kernel, 1, sizeof(cl_mem), &next_buffer);
@@ -135,7 +135,7 @@ unsigned life_invoke_ocl_finish (unsigned nb_iter)
                                   NULL);
         check(err, "Failed to read change buffer from GPU");
 
-        if (change_buffer_value[0] == 0){
+        if (change_buffer_value[0] != 1){
             printf("on s'arrete à %u iteration\n", it);
             break;
         }
