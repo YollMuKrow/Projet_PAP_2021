@@ -33,7 +33,7 @@ __kernel void life_ocl_finish (__global unsigned *in, __global unsigned *out, __
         out[y*DIM + x] = n;
 
 //        if(out[y*DIM + x] != in[y*DIM + x]){
-//            change[0]=1;
+            change[0]=0;
 //        }
     }
 }
