@@ -68,7 +68,7 @@ static inline void swap_tables (void)
 ///////////////////////////OCL version
 
 ///////////////////////////OCL version
-static cl_mem change_buffer = 0;
+static cl_mem change_buffer, reset_buffer = 0;
 
 void life_refresh_img_ocl_finish (void){
     cl_int err;
@@ -94,14 +94,12 @@ void life_init_ocl_finish (void)
     change_buffer = clCreateBuffer (context, CL_MEM_READ_WRITE, sizeof (unsigned), NULL, NULL);
     if (!change_buffer)
         exit_with_error ("Failed to allocate change buffer");
+    reset_buffer = clCreateBuffer (context, CL_MEM_READ_WRITE, sizeof (unsigned), NULL, NULL);
+    if (!reset_buffer)
+        exit_with_error ("Failed to allocate reset buffer");
     life_init();
 }
 
-void reset_change_buffer(void){
-    change_buffer = clCreateBuffer (context, CL_MEM_READ_WRITE, sizeof (unsigned), NULL, NULL);
-    if (!change_buffer)
-        exit_with_error ("Failed to allocate change buffer");
-}
 unsigned life_invoke_ocl_finish (unsigned nb_iter)
 {
     size_t global[2] = {GPU_SIZE_X, GPU_SIZE_Y};
@@ -118,7 +116,7 @@ unsigned life_invoke_ocl_finish (unsigned nb_iter)
 
     for (unsigned it = 1; it <= nb_iter; it++) {
         change_buffer_value[0] = 0;
-        reset_change_buffer();
+        change_buffer = reset_buffer;
 
         err = 0;
         err |= clSetKernelArg(compute_kernel, 0, sizeof(cl_mem), &cur_buffer);
