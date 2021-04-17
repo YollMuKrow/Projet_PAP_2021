@@ -29,7 +29,6 @@ __kernel void life_ocl_finish (__global unsigned *in, __global unsigned *out, __
 				in[(y+1)*DIM + x-1] + in[(y+1)*DIM + x] + in[(y+1)*DIM + x + 1]);
 
         n = (n == 3 + in[y*DIM + x]) | (n == 3);
-        printf("change = %u\n",change[0]);
         if(n != in[y*DIM + x]){
             change[0]=1;
         }
