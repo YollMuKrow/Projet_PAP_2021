@@ -109,7 +109,7 @@ unsigned life_invoke_ocl_finish (unsigned nb_iter)
         printf("Echec de l'initialisation du malloc !\n");
         return EXIT_FAILURE;
     }
-
+    change_buffer_value[0] = 0;
     monitoring_start_tile (easypap_gpu_lane (TASK_TYPE_COMPUTE));
 
     for (unsigned it = 1; it <= nb_iter; it++) {
