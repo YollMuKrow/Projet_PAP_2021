@@ -138,6 +138,7 @@ unsigned life_invoke_ocl_finish (unsigned nb_iter)
         printf("change ite %u = %u\n", it, change_buffer_value[0]);
         if (change_buffer_value[0] == 0){
             printf("on s'arrete à %u iteration\n", it);
+            nb_iter = it;
             break;
         }
     }
