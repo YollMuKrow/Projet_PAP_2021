@@ -11,9 +11,10 @@ __kernel void life_ocl (__global unsigned *in, __global unsigned *out)
 	__local unsigned n;
 
 	if (x > 0 && x < DIM - 1 && y > 0 && y < DIM - 1){
-		n = (  in[(y-1)*DIM + x-1] + in[(y-1)*DIM + x] + in[(y-1)*DIM + x + 1] +
+		n = (  in[(y-1)*DIM + x-1]  + in[(y-1)*DIM + x] + in[(y-1)*DIM + x + 1] +
 				in[y*DIM + x -1]    + in[y*DIM + x]     + in[y*DIM + x + 1 ]    +
 				in[(y+1)*DIM + x-1] + in[(y+1)*DIM + x] + in[(y+1)*DIM + x + 1]);
+
 		//printf("n = %u, value = %u, x = %u, y = %u\n", n, in[y*DIM + x], x, y);
 		n = (n == 3 + in[y*DIM + x]) | (n == 3);
 		//printf("n new = %u\n", n);
@@ -29,19 +30,25 @@ __kernel void life_ocl_tile (__global unsigned *in, __global unsigned *out)
 	unsigned yloc = get_local_id (1);
 	unsigned xgroup = get_group_id (0);
 	unsigned ygroup = get_group_id (1);
+    __local unsigned tile [GPU_TILE_H][GPU_TILE_W];
 
+    printf("local_size x = %u,local_size x = %u, group_size x = %u, group_size = %i\n",get_local_size(0),get_local_size(1),get_group_size(0),get_group_size(1));
 
-	__local unsigned n;
-
-	if (x > 0 && x < DIM - 1 && y > 0 && y < DIM - 1){
-		n = (  in[(y-1)*DIM + x-1] + in[(y-1)*DIM + x] + in[(y-1)*DIM + x + 1] +
-				in[y*DIM + x -1]    + in[y*DIM + x]     + in[y*DIM + x + 1 ]    +
-				in[(y+1)*DIM + x-1] + in[(y+1)*DIM + x] + in[(y+1)*DIM + x + 1]);
-		//printf("n = %u, value = %u, x = %u, y = %u\n", n, in[y*DIM + x], x, y);
-		n = (n == 3 + in[y*DIM + x]) | (n == 3);
-		//printf("groupx = %u groupy = %u\n", xgroup, ygroup);
-		out[y*DIM + x] = n ;
-	}
+//    tile[x][y] = in[y*DIM+x];
+//
+//    barrier (CLK_LOCAL_MEM_FENCE);
+//	__local unsigned n;
+//	if (x > 0 && x < DIM - 1 && y > 0 && y < DIM - 1){
+//		for (int i = y-1; i < y+1; i++)
+//            for (int j = x-1; j < x+1; j++){
+//                n+=tile[]
+//            }
+//                //printf("n = %u, value = %u, x = %u, y = %u\n", n, in[y*DIM + x], x, y);
+//		n = (n == 3 + in[y*DIM + x]) | (n == 3);
+//        barrier (CLK_LOCAL_MEM_FENCE);
+//		//printf("groupx = %u groupy = %u\n", xgroup, ygroup);
+//		out[y*DIM + x] = tile[yloc][xloc] ;
+//	}
 }
 
 __kernel void life_update_texture (__global unsigned *cur, __write_only image2d_t tex)
