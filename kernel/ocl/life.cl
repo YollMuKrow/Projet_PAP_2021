@@ -24,7 +24,7 @@ __kernel void life_ocl_finish (__global unsigned *in, __global unsigned *out, __
     unsigned y = get_global_id (1);
     __local unsigned n;
 
-    change[0]=0;
+    //change[0]=0;
 
     if (x > 0 && x < DIM - 1 && y > 0 && y < DIM - 1){
         n = (  in[(y-1)*DIM + x-1]  + in[(y-1)*DIM + x] + in[(y-1)*DIM + x + 1] +
