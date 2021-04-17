@@ -93,7 +93,7 @@ void life_refresh_img_ocl (void){
 void life_init_ocl_finish (void)
 {
     life_init();
-    change_buffer = clCreateBuffer (context, CL_MEM_READ_WRITE, sizeof (unsigned), NULL, NULL);
+    change_buffer = clCreateBuffer (context, CL_MEM_WRITE_ONLY, sizeof (unsigned), NULL, NULL);
     if (!change_buffer)
         exit_with_error ("Failed to allocate change buffer");
 }
@@ -109,7 +109,7 @@ unsigned life_invoke_ocl_finish (unsigned nb_iter)
         printf("Echec de l'initialisation du malloc !\n");
         return EXIT_FAILURE;
     }
-    printf("salut !\n");
+
     monitoring_start_tile (easypap_gpu_lane (TASK_TYPE_COMPUTE));
 
     for (unsigned it = 1; it <= nb_iter; it++) {
@@ -129,11 +129,12 @@ unsigned life_invoke_ocl_finish (unsigned nb_iter)
             cur_buffer = next_buffer;
             next_buffer = tmp;
         }
-        printf("salut j'ai fini\n");
+
         err = clEnqueueReadBuffer(queue, change_buffer, CL_TRUE, 0,
                                   sizeof (unsigned), change_buffer_value, 0, NULL,
                                   NULL);
         check(err, "Failed to read change buffer from GPU");
+        printf("change buffer = %u\n", change_buffer_value[0]);
         if(change_buffer_value[0]==1)
             break;
     }
