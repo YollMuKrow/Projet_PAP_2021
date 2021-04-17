@@ -129,6 +129,7 @@ unsigned life_invoke_ocl_finish (unsigned nb_iter)
             cur_buffer = next_buffer;
             next_buffer = tmp;
         }
+        printf("salut j'ai fini\n");
         err = clEnqueueReadBuffer(queue, change_buffer, CL_TRUE, 0,
                                   sizeof (unsigned), &change_buffer_value, 0, NULL,
                                   NULL);
