@@ -87,10 +87,10 @@ unsigned life_invoke_ocl (unsigned nb_iter)
 
 	for (unsigned it = 1; it <= nb_iter; it++) {
 		err = 0;
-//		err |= clSetKernelArg (compute_kernel, 0, sizeof (cl_mem), &cur_buffer);
-//		err |= clSetKernelArg (compute_kernel, 1, sizeof (cl_mem), &next_buffer);
-//		check (err, "Failed to set kernel arguments");
-//
+		err |= clSetKernelArg (compute_kernel, 0, sizeof (cl_mem), &cur_buffer);
+		err |= clSetKernelArg (compute_kernel, 1, sizeof (cl_mem), &next_buffer);
+		check (err, "Failed to set kernel arguments");
+
 		err = clEnqueueNDRangeKernel (queue, compute_kernel, 2, NULL, global, local,
 		                              0, NULL, NULL);
 		check (err, "Failed to execute kernel");
