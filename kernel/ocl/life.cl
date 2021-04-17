@@ -41,11 +41,7 @@ __kernel void life_ocl_finish (__global unsigned *in, __global unsigned *out, __
             //printf(" ");
             change[0]=1;
         }
-        if(change[0] != 1)
-            change[0]=0;
     }
-
-
 }
 
 
