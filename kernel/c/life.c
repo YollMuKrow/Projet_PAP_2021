@@ -104,16 +104,16 @@ unsigned life_invoke_ocl_finish (unsigned nb_iter)
     size_t local[2]  = {GPU_TILE_W, GPU_TILE_H};
     cl_int err;
 
-    unsigned *change_buffer_value = malloc(sizeof (unsigned));
-    if (change_buffer_value == NULL){
-        printf("Echec de l'initialisation du malloc !\n");
-        return EXIT_FAILURE;
-    }
+    unsigned change_buffer_value;
+//    if (change_buffer_value == NULL){
+//        printf("Echec de l'initialisation du malloc !\n");
+//        return EXIT_FAILURE;
+//    }
 
     monitoring_start_tile (easypap_gpu_lane (TASK_TYPE_COMPUTE));
 
     for (unsigned it = 1; it <= nb_iter; it++) {
-        change_buffer_value[0] = 0;
+        change_buffer_value = 0;
         change_buffer = reset_buffer;
 
         err = 0;
@@ -241,8 +241,6 @@ unsigned life_compute_tiled (unsigned nb_iter)
 
     return res;
 }
-
-///////////////////////////// Tiled parallel version
 
 ///////////////////////// TEST FIRST TOUCH 32x32 for_inner_c + for_inner
 static int compute_new_state_nocheck (int y, int x)
