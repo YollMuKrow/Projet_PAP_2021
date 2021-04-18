@@ -136,7 +136,7 @@ unsigned life_invoke_ocl_finish (unsigned nb_iter)
                                   sizeof(unsigned), &change_buffer_value, 0, NULL,
                                   NULL);
         check(err, "Failed to read change buffer from GPU");
-        printf("change value = %u", change_buffer_value);
+        printf("change value = %u, it = %u\n", change_buffer_value, it);
         if (change_buffer_value == 0){
             break;
         }
