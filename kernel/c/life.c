@@ -104,16 +104,16 @@ unsigned life_invoke_ocl_finish (unsigned nb_iter)
     size_t local[2]  = {GPU_TILE_W, GPU_TILE_H};
     cl_int err;
 
-    unsigned change_buffer_value;
-//    if (change_buffer_value == NULL){
-//        printf("Echec de l'initialisation du malloc !\n");
-//        return EXIT_FAILURE;
-//    }
+    unsigned *change_buffer_value = malloc(sizeof (unsigned));
+    if (change_buffer_value == NULL){
+        printf("Echec de l'initialisation du malloc !\n");
+        return EXIT_FAILURE;
+    }
 
     monitoring_start_tile (easypap_gpu_lane (TASK_TYPE_COMPUTE));
 
     for (unsigned it = 1; it <= nb_iter; it++) {
-        change_buffer_value = 0;
+        change_buffer_value[0] = 0;
         change_buffer = reset_buffer;
 
         err = 0;
@@ -133,11 +133,11 @@ unsigned life_invoke_ocl_finish (unsigned nb_iter)
         }
 
         err = clEnqueueReadBuffer(queue, change_buffer, CL_TRUE, 0,
-                                  sizeof(unsigned), &change_buffer_value, 0, NULL,
+                                  sizeof(unsigned), change_buffer_value, 0, NULL,
                                   NULL);
         check(err, "Failed to read change buffer from GPU");
-        printf("change value = %u, it = %u\n", change_buffer_value, it);
-        if (change_buffer_value == 0){
+
+        if (change_buffer_value[0] == 0){
             break;
         }
     }
