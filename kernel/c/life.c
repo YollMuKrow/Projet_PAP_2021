@@ -778,8 +778,8 @@ unsigned life_compute_vec(unsigned nb_iter){
 static int do_tile_vec(unsigned x, unsigned y, unsigned w, unsigned h, unsigned cpu){
     int change = 0;
     monitoring_start_tile (cpu);
-    for(int i = 0; i<h; i++){ //Loop lines
-        for(int j = 0; j<w; j+=VEC_SIZE_INT){ //Loop columns
+    for(int j = 0; j<w; j+=VEC_SIZE_INT){ //Loop columns
+        for(int i = 0; i<h; i++){ //Loop lines
             change |= compute_multiple_cells(x+j, y+i);
         }
     }
@@ -790,18 +790,17 @@ static int do_tile_vec(unsigned x, unsigned y, unsigned w, unsigned h, unsigned 
 int compute_multiple_cells(int x, int y){
     __m256i full   = _mm256_set1_epi32(0xFFFFffff); //32 bits to 1
     __m256i one    = _mm256_set1_epi32(1);
+    
+    __m256i cells   = _mm256_lddqu_si256((int*)&cur_table(y,x)); //Current cells value
+    __m256i top     = _mm256_lddqu_si256((int*)&cur_table(y-1, x));
+    __m256i bot     = _mm256_lddqu_si256((int*)&cur_table(y+1, x));
+    __m256i right   = _mm256_lddqu_si256((int*)&cur_table(y, x+1));
+    __m256i left    = _mm256_lddqu_si256((int*)&cur_table(y, x-1));
 
-    __m256i cells   = _mm256_maskload_epi32((int*)&cur_table(y,x), full); //Current cells value
-
-    __m256i top     = _mm256_maskload_epi32((int*)&cur_table(y-1, x), full);
-    __m256i bot     = _mm256_maskload_epi32((int*)&cur_table(y+1, x), full);
-    __m256i right   = _mm256_maskload_epi32((int*)&cur_table(y, x+1), full);
-    __m256i left    = _mm256_maskload_epi32((int*)&cur_table(y, x-1), full);
-
-    __m256i topright    = _mm256_maskload_epi32((int*)&cur_table(y-1, x+1), full);
-    __m256i botright    = _mm256_maskload_epi32((int*)&cur_table(y+1, x+1), full);
-    __m256i topleft     = _mm256_maskload_epi32((int*)&cur_table(y-1, x-1), full);
-    __m256i botleft     = _mm256_maskload_epi32((int*)&cur_table(y+1, x-1), full);
+    __m256i topright    = _mm256_lddqu_si256((int*)&cur_table(y-1, x+1));
+    __m256i botright    = _mm256_lddqu_si256((int*)&cur_table(y+1, x+1));
+    __m256i topleft     = _mm256_lddqu_si256((int*)&cur_table(y-1, x-1));
+    __m256i botleft     = _mm256_lddqu_si256((int*)&cur_table(y+1, x-1));
 
     __m256i sum = _mm256_add_epi32(
                     _mm256_add_epi32(
@@ -811,7 +810,7 @@ int compute_multiple_cells(int x, int y){
                         _mm256_add_epi32(topright,topleft),
                         _mm256_add_epi32(botright,botleft))
                     ); //Number of alive neighbours of each cell
-    
+
     //Contains cells that are born (even if already alive) this iteration
     __m256i alive = _mm256_and_si256(_mm256_cmpeq_epi32(_mm256_add_epi32(sum, cells), _mm256_set1_epi32(3)), one);
 
@@ -820,11 +819,10 @@ int compute_multiple_cells(int x, int y){
     
     //cell = alive | same&cell
     __m256i result = _mm256_or_si256(alive, _mm256_and_si256(same, cells));
-    _mm256_maskstore_epi32((int*)&next_table(y,x),full,result); //Copy the result vector into memory
+    _mm256_storeu_si256((int*)&next_table(y,x),result); //Copy the result vector into memory
 
     return _mm256_movemask_epi8(_mm256_cmpeq_epi32(cells, result)) != 0xFFFFffffU; //Test for equality, flip the output
 }
-
 
 unsigned life_compute_tiled_omp_for_vec (unsigned nb_iter)
 {
@@ -879,6 +877,111 @@ unsigned life_compute_omp_for_lazy_vec(unsigned nb_iter)
 
     return res;
 }
+
+
+
+int compute_multiple_cells_opt(int x, int y){
+    // Tried to minimize useless memory access
+    // Didn't do much
+    
+    __m256i full   = _mm256_set1_epi32(0xFFFFffff); //32 bits to 1
+    __m256i one    = _mm256_set1_epi32(1);
+    __m256i shiftl = _mm256_set_epi32(0,7,6,5,4,3,2,1);
+    __m256i shiftr = _mm256_set_epi32(6,5,4,3,2,1,0,7);
+     
+    __m256i cells   = _mm256_lddqu_si256((int*)&cur_table(y,x)); //Current cells value
+    __m256i right   = _mm256_insert_epi32(_mm256_permutevar8x32_epi32(cells, shiftl), cur_table(y,x+8), 7);
+    __m256i left    = _mm256_insert_epi32(_mm256_permutevar8x32_epi32(cells, shiftr), cur_table(y,x-1), 0);
+
+    __m256i top        = _mm256_lddqu_si256((int*)&cur_table(y-1, x));
+    __m256i topright   = _mm256_insert_epi32(_mm256_permutevar8x32_epi32(top, shiftl), cur_table(y-1,x+8), 7);
+    __m256i topleft    = _mm256_insert_epi32(_mm256_permutevar8x32_epi32(top, shiftr), cur_table(y-1,x-1), 0);
+    
+    __m256i bot        = _mm256_lddqu_si256((int*)&cur_table(y+1, x));
+    __m256i botright   = _mm256_insert_epi32(_mm256_permutevar8x32_epi32(bot, shiftl), cur_table(y+1,x+8), 7);
+    __m256i botleft    = _mm256_insert_epi32(_mm256_permutevar8x32_epi32(bot, shiftr), cur_table(y+1,x-1), 0);
+    
+    __m256i sum = _mm256_add_epi32(
+                    _mm256_add_epi32(
+                        _mm256_add_epi32(top,bot),
+                        _mm256_add_epi32(right,left)),
+                    _mm256_add_epi32(
+                        _mm256_add_epi32(topright,topleft),
+                        _mm256_add_epi32(botright,botleft))
+                    ); //Number of alive neighbours of each cell
+
+    //Contains cells that are born (even if already alive) this iteration
+    __m256i alive = _mm256_and_si256(_mm256_cmpeq_epi32(_mm256_add_epi32(sum, cells), _mm256_set1_epi32(3)), one);
+
+    //Contain cells that didn't change this iteration
+    __m256i same  = _mm256_and_si256(_mm256_cmpeq_epi32(_mm256_add_epi32(sum, cells), _mm256_set1_epi32(4)), one);
+    
+    //cell = alive | same&cell
+    __m256i result = _mm256_or_si256(alive, _mm256_and_si256(same, cells));
+
+    _mm256_storeu_si256((int*)&next_table(y,x), result); //Write the result vector into memory
+
+    return _mm256_movemask_epi8(_mm256_cmpeq_epi32(cells, result)) != 0xFFFFffffU; //Test for equality, flip the output
+}
+
+static int do_tile_vec_opt(unsigned x, unsigned y, unsigned w, unsigned h, unsigned cpu){
+    int change = 0;
+    monitoring_start_tile (cpu);
+    for(int j = 0; j<w; j+=VEC_SIZE_INT){ //Loop columns
+        for(int i = 0; i<h; i++){ //Loop lines
+            change |= compute_multiple_cells_opt(x+j, y+i);
+        }
+    }
+    monitoring_end_tile (x, y, w, h, cpu);
+    return change;
+}
+
+unsigned life_compute_vec_opt(unsigned nb_iter){
+    unsigned res = 0;
+	for (unsigned it = 1; it <= nb_iter; it++) {
+		unsigned change = 0;
+        for (int y = 0; y < DIM; y += TILE_H)
+            for (int x = 0; x < DIM; x += TILE_W){
+                change |= do_tile_vec_opt(x, y, TILE_W, TILE_H, omp_get_thread_num());
+            }
+		swap_tables ();
+
+		if (!change) { // we stop when all cells are stable
+			res = it;
+			break;
+		}
+	}
+
+	return res;
+}
+
+unsigned life_compute_omp_for_lazy_vec_opt(unsigned nb_iter)
+{
+    unsigned res = 0;
+
+    for (unsigned it = 1; it <= nb_iter; it++) {
+        #pragma omp parallel
+        {
+            #pragma omp for collapse(2) schedule(static)
+            for(int y=0; y<(DIM-TILE_H); y+=TILE_H){
+                for(int x=0; x<(DIM-TILE_W); x+=TILE_W){
+                    unsigned tile_x = x >> tile_w_power;
+                    unsigned tile_y = y >> tile_h_power;
+                    next_change_table(tile_x, tile_y) = tile_needs_update(tile_x, tile_y) && do_tile_vec_opt(x, y, TILE_W, TILE_H, omp_get_thread_num());
+                }
+            }
+        } // omp parallel
+        swap_tables ();
+
+        /*if (!change) { // we stop when all cells are stable
+            res = it;
+            break;
+        }*/
+    }
+
+    return res;
+}
+
 #endif
 ///////////////////////////// Initial configs
 
