@@ -133,7 +133,7 @@ unsigned life_invoke_ocl_finish (unsigned nb_iter)
         }
 
         err = clEnqueueReadBuffer(queue, change_buffer, CL_TRUE, 0,
-                                  sizeof(unsigned), change_buffer_value, 0, NULL,
+                                  sizeof(unsigned), &change_buffer_value, 0, NULL,
                                   NULL);
         check(err, "Failed to read change buffer from GPU");
         printf("change value = %u", change_buffer_value);
