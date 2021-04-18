@@ -1,0 +1,2 @@
+machine;size;tilew;tileh;threads;kernel;variant;iterations;schedule;label;arg;time
+ernst;6208;32;32;48;life;seq;1000;;unlabelled;meta3x3;36373093

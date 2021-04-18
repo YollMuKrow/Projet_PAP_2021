@@ -1,0 +1,2 @@
+machine;size;tilew;tileh;threads;kernel;variant;iterations;schedule;label;arg;time
+ernst;4096;32;32;48;life;seq;1000;;unlabelled;guns;17049057
