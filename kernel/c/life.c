@@ -358,7 +358,7 @@ unsigned life_compute_lazy(unsigned nb_iter)
 {
     unsigned res = 0;
     for (unsigned it = 1; it <= nb_iter; it++) {
-        unsigned change = 0;
+        //unsigned change = 0;
 #pragma omp parallel
         {
             //Outer loops
