@@ -13,7 +13,10 @@ static unsigned color = 0xFFFF00FF; // Living cells have the yellow color
 typedef unsigned cell_t;
 
 static cell_t *restrict _table = NULL, *restrict _alternate_table = NULL;
-
+/////////////
+static cell_t *restrict _change_table = NULL, *restrict _alternate_change_table = NULL; //storing change variables
+static unsigned tile_w_power, tile_h_power;
+////////////
 static inline cell_t *table_cell (cell_t *restrict i, int y, int x)
 {
 return i + y * DIM + x;
@@ -23,6 +26,10 @@ return i + y * DIM + x;
 // Instead, we use 2D arrays of boolean values, not colors
 #define cur_table(y, x) (*table_cell (_table, (y), (x)))
 #define next_table(y, x) (*table_cell (_alternate_table, (y), (x)))
+////////////////
+#define cur_change_table(y, x) (*table_change (_change_table, (y), (x)))
+#define next_change_table(y, x) (*table_change (_alternate_change_table, (y), (x)))
+///////////////
 
 void life_init (void)
 {
@@ -320,8 +327,6 @@ unsigned life_compute_tiled_omp_for_inner_opt (unsigned nb_iter)
  * Based on inner_opt to minimize branching
  */
 
-#define cur_change_table(y, x) (*table_change (_change_table, (y), (x)))
-#define next_change_table(y, x) (*table_change (_alternate_change_table, (y), (x)))
 
 bool tile_needs_update(unsigned tile_x, unsigned tile_y){
     bool update = 	cur_change_table(tile_x	 , tile_y	)
