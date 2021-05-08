@@ -466,6 +466,12 @@ unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
 				global[1] = gpu_y_part;
 			}
 		}*/
+        printf("cur table init before gpu: \n");
+        for(int y = 0; y < DIM; y++) {
+            for (int x = 0; x < DIM; x++)
+                printf("%d ", cur_table(y, x));
+            printf("\n");
+        }
 
 		err = 0;
 		err |= clSetKernelArg(compute_kernel, 0, sizeof(cl_mem), &cur_buffer);
@@ -484,33 +490,26 @@ unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
 		                          sizeof (unsigned) * DIM * DIM, _alternate_table, 0, NULL,
 		                          NULL);
         check(err, "Failed to read next_buffer");
+        clFlush (queue);
 
 		//on récupère la première ligne calculé par le gpu dans next_buffer et on le transfert dans frontier_data
         err = clEnqueueReadBuffer(queue, frontier_buffer, CL_TRUE, 0,
 		                          sizeof (unsigned) * DIM, frontier_data, 0, NULL,
 		                          NULL);
         check(err, "Failed to read frontier buffer");
-		printf("cur table after gpu: \n");
-		for(int y = 0; y < DIM; y++) {
-			for (int x = 0; x < DIM; x++)
-				printf("%d ", cur_table(y, x));
-			printf("\n");
-		}
-		printf("alternate table after gpu : \n");
-		for(int y = 0; y < DIM; y++) {
-			for (int x = 0; x < DIM; x++)
-				printf("%d ", next_table(y, x));
-			printf("\n");
-		}
-		printf("\n");
-		printf("\n");
+        clFlush (queue);
+
         // on transfert les données calculé dans le cur_table
 #pragma omp parallel for
         for(int i = 0; i < DIM; i++)
             cur_table(cpu_y_part,i) = frontier_data[i];
 
-		check(err, "Failed to read next_buffer from GPU");
-		clFlush (queue);
+        printf("cur table init after gpu + ajout frontiere: \n");
+        for(int y = 0; y < DIM; y++) {
+            for (int x = 0; x < DIM; x++)
+                printf("%d ", cur_table(y, x));
+            printf("\n");
+        }
 
 		t1 = what_time_is_it ();
 		//On effectue la partie du CPU
@@ -520,20 +519,13 @@ unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
 				do_tile (x, y, TILE_W, TILE_H, omp_get_thread_num()); // on modifie le résultat qu'on met dans next_table
 
 
-        printf("cur table after cpu: \n");
+        printf("cur table after calcul cpu: \n");
         for(int y = 0; y < DIM; y++) {
             for (int x = 0; x < DIM; x++)
                 printf("%d ", cur_table(y, x));
             printf("\n");
         }
-        printf("alternate table after cpu : \n");
-        for(int y = 0; y < DIM; y++) {
-            for (int x = 0; x < DIM; x++)
-                printf("%d ", next_table(y, x));
-            printf("\n");
-        }
-        printf("\n");
-        printf("\n");
+
 
 		// on calcul le temps qu'a mis le CPU à faire les calculs
 		t2 = what_time_is_it ();
