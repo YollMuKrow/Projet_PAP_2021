@@ -235,12 +235,6 @@ unsigned life_compute_tiled_omp_for(unsigned nb_iter)
 				for (int x = 0; x < DIM; x += TILE_W)
 					change |= do_tile (x, y, TILE_W, TILE_H, omp_get_thread_num());
 		}
-        printf("next table after cpu: \n");
-        for(int y = 0; y < DIM; y++) {
-            for (int x = 0; x < DIM; x++)
-                printf("%d ", next_table(y, x));
-            printf("\n");
-        }
 		swap_tables ();
 		if (!change) { // we stop when all cells are stable
 			res = it;
@@ -471,12 +465,12 @@ unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
 				global[1] = gpu_y_part;
 			}
 		}*/
-        printf("cur table before gpu: \n");
-        for(int y = 0; y < DIM; y++) {
-            for (int x = 0; x < DIM; x++)
-                printf("%d ", cur_table(y, x));
-            printf("\n");
-        }
+//        printf("cur table before gpu: \n");
+//        for(int y = 0; y < DIM; y++) {
+//            for (int x = 0; x < DIM; x++)
+//                printf("%d ", cur_table(y, x));
+//            printf("\n");
+//        }
 
 		err = 0;
 		err |= clSetKernelArg(compute_kernel, 0, sizeof(cl_mem), &cur_buffer);
@@ -516,16 +510,15 @@ unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
 			for (int x = 0; x < DIM; x += TILE_W)
 				do_tile (x, y, TILE_W, TILE_H, omp_get_thread_num()); // on modifie le résultat qu'on met dans next_table
 
-
-        printf("next table after calcul cpu + merge gpu: \n");
-        for(int y = 0; y < DIM; y++) {
-            for (int x = 0; x < DIM; x++)
-                printf("%d ", next_table(y, x));
-            printf("\n");
-        }
-        printf("\n");
-        printf("\n");
-
+//        printf("next table after calcul cpu + merge gpu: \n");
+//        for(int y = 0; y < DIM; y++) {
+//            for (int x = 0; x < DIM; x++)
+//                printf("%d ", next_table(y, x));
+//            printf("\n");
+//        }
+//        printf("\n");
+//        printf("\n");
+//
 
 		// on calcul le temps qu'a mis le CPU à faire les calculs
 		t2 = what_time_is_it ();
