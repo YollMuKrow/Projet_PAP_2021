@@ -479,15 +479,17 @@ unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
 
 		check(err, "Failed to execute kernel");
 
-//		//on récupère la première ligne calculé par le gpu dans next_buffer et on le transfert dans _table(cur_table)
-//		err = clEnqueueReadBuffer(queue, next_buffer, CL_TRUE, 0,
-//		                          sizeof (unsigned) * (cpu_y_part+1) * DIM, _table, 0, NULL,
-//		                          NULL);
+//		//on récupère la partie calculé par le gpu dans next_buffer et on le transfert dans next_table
+		err = clEnqueueReadBuffer(queue, next_buffer, CL_TRUE, 0,
+		                          sizeof (unsigned) * DIM * DIM, _alternate_table, 0, NULL,
+		                          NULL);
+        check(err, "Failed to read next_buffer");
 
 		//on récupère la première ligne calculé par le gpu dans next_buffer et on le transfert dans frontier_data
         err = clEnqueueReadBuffer(queue, frontier_buffer, CL_TRUE, 0,
 		                          sizeof (unsigned) * DIM, frontier_data, 0, NULL,
 		                          NULL);
+        check(err, "Failed to read frontier buffer");
 
         // on transfert les données calculé dans le cur_table
 #pragma omp parallel for
