@@ -13,14 +13,20 @@ static unsigned color = 0xFFFF00FF; // Living cells have the yellow color
 typedef unsigned cell_t;
 
 static cell_t *restrict _table = NULL, *restrict _alternate_table = NULL;
-/////////////
-static cell_t *restrict _change_table = NULL, *restrict _alternate_change_table = NULL; //storing change variables
-static unsigned tile_w_power, tile_h_power;
-////////////
+
 static inline cell_t *table_cell (cell_t *restrict i, int y, int x)
 {
 return i + y * DIM + x;
 }
+////////////
+static cell_t *restrict _change_table = NULL, *restrict _alternate_change_table = NULL; //storing change variables
+static unsigned tile_w_power, tile_h_power;
+
+static inline cell_t *table_change (cell_t *restrict i, int y, int x)
+{
+return i + (y+1) * NB_TILES_Y + (x+1); // +1 to each argument to account for the extra borders
+}
+/////////////
 
 // This kernel does not directly work on cur_img/next_img.
 // Instead, we use 2D arrays of boolean values, not colors
