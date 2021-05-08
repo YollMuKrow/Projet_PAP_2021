@@ -679,7 +679,7 @@ unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
         clFlush (queue);
 
         // on transfert les données calculé dans le cur_table
-#pragma omp parallel for collapse(2)
+#pragma omp parallel for
         for(int i = 0; i < DIM; i++)
             cur_table(cpu_y_part,i) = frontier_data[i];
 
