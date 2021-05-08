@@ -466,10 +466,10 @@ unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
 				global[1] = gpu_y_part;
 			}
 		}*/
-        printf("cur table init before gpu: \n");
+        printf("next table init before gpu: \n");
         for(int y = 0; y < DIM; y++) {
             for (int x = 0; x < DIM; x++)
-                printf("%d ", cur_table(y, x));
+                printf("%d ", next_table(y, x));
             printf("\n");
         }
 
@@ -504,10 +504,10 @@ unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
         for(int i = 0; i < DIM; i++)
             cur_table(cpu_y_part,i) = frontier_data[i];
 
-        printf("cur table init after gpu + ajout frontiere: \n");
+        printf("next table init after gpu + ajout frontiere: \n");
         for(int y = 0; y < DIM; y++) {
             for (int x = 0; x < DIM; x++)
-                printf("%d ", cur_table(y, x));
+                printf("%d ", next_table(y, x));
             printf("\n");
         }
 
@@ -519,12 +519,14 @@ unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
 				do_tile (x, y, TILE_W, TILE_H, omp_get_thread_num()); // on modifie le résultat qu'on met dans next_table
 
 
-        printf("cur table after calcul cpu: \n");
+        printf("next table after calcul cpu: \n");
         for(int y = 0; y < DIM; y++) {
             for (int x = 0; x < DIM; x++)
-                printf("%d ", cur_table(y, x));
+                printf("%d ", next_table(y, x));
             printf("\n");
         }
+        printf("\n");
+        printf("\n");
 
 
 		// on calcul le temps qu'a mis le CPU à faire les calculs
