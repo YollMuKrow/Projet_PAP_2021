@@ -31,7 +31,7 @@ return i + y * DIM + x;
 #define next_change_table(y, x) (*table_change (_alternate_change_table, (y), (x)))
 ///////////////
 
-void life_init (void)
+/*void life_init (void)
 {
 	// life_init may be (indirectly) called several times so we check if data were
 	// already allocated
@@ -46,14 +46,71 @@ void life_init (void)
 		_alternate_table = mmap (NULL, size, PROT_READ | PROT_WRITE,
 		                         MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 	}
-}
+}*/
+void life_init (void)
+{
+    // life_init may be (indirectly) called several times so we check if data were
+    // already allocated
+    if (_table == NULL) {
+        const unsigned size = DIM * DIM * sizeof (cell_t);
+        const unsigned tiles = (NB_TILES_X+2)*(NB_TILES_Y+2) * sizeof(cell_t); // We allocate extra borders
+        PRINT_DEBUG ('u', "Memory footprint = 2 x %d bytes\n", size);
 
+        _table = mmap (NULL, size, PROT_READ | PROT_WRITE,
+                       MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+
+        _alternate_table = mmap (NULL, size, PROT_READ | PROT_WRITE,
+                                 MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+
+        _change_table = mmap (NULL, tiles, PROT_READ | PROT_WRITE,
+                              MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+
+        _alternate_change_table = mmap (NULL, tiles, PROT_READ | PROT_WRITE,
+                                        MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+
+        for(unsigned tile_x = -1; tile_x <=NB_TILES_X; tile_x++){
+            for(unsigned tile_y = -1; tile_y <=NB_TILES_Y; tile_y++){
+                cur_change_table(tile_x, tile_y) = 0;
+                next_change_table(tile_x, tile_y) = 0;
+            }
+        }
+        for(unsigned tile_x = 0; tile_x <NB_TILES_X; tile_x++){
+            for(unsigned tile_y = 0; tile_y <NB_TILES_Y; tile_y++){
+                cur_change_table(tile_x, tile_y) = 1;
+            }
+        }
+
+        //Tile_w_power and tile_h_power hold log2(TILE_W) and log2(TILE_H)
+        //they are used to quickly divide when we want to know in which tile a cell is
+        tile_w_power = 0;
+        while((0x1<<tile_w_power) != TILE_W)
+            tile_w_power++;
+
+        tile_h_power = 0;
+        while((0x1<<tile_h_power) != TILE_H)
+            tile_h_power++;
+
+        printf("Tiles = 2^%u×2^%u\n", tile_w_power, tile_h_power);
+    }
+}
+/*
 void life_finalize (void)
 {
 	const unsigned size = DIM * DIM * sizeof (cell_t);
 
 	munmap (_table, size);
 	munmap (_alternate_table, size);
+}
+*/
+void life_finalize (void)
+{
+    const unsigned size = DIM * DIM * sizeof (cell_t);
+
+    munmap (_table, size);
+    munmap (_alternate_table, size);
+    munmap (_change_table, NB_TILES_Y*NB_TILES_X);
+    munmap (_alternate_change_table, NB_TILES_Y*NB_TILES_X);
+
 }
 
 // This function is called whenever the graphical window needs to be refreshed
@@ -63,7 +120,19 @@ void life_refresh_img (void)
 		for (int j = 0; j < DIM; j++)
 			cur_img (i, j) = cur_table (i, j) * color;
 }
+static inline void swap_tables (void)
+{
+    cell_t *tmp = _table;
 
+    _table           = _alternate_table;
+    _alternate_table = tmp;
+
+    tmp = _change_table;
+
+    _change_table = _alternate_change_table;
+    _alternate_change_table = tmp;
+}
+/*
 static inline void swap_tables (void)
 {
 	cell_t *tmp = _table;
@@ -71,6 +140,7 @@ static inline void swap_tables (void)
 	_table           = _alternate_table;
 	_alternate_table = tmp;
 }
+*/
 
 ////////////////// TOUCH TILE FUNCTION
 void do_touch_tile(int x, int y, int width, int height)
