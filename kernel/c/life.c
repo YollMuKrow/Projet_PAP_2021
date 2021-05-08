@@ -505,7 +505,6 @@ unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
 
 		t1 = what_time_is_it ();
 		//On effectue la partie du CPU
-		printf("cpu_y_part = %d, gpu y part = %d\n", cpu_y_part, gpu_y_part);
 #pragma omp parallel for collapse(2) schedule(static)
 		for (int y = 0; y < cpu_y_part; y += TILE_H)
 			for (int x = 0; x < DIM; x += TILE_W)
