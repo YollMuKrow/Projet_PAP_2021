@@ -430,9 +430,7 @@ void life_init_ocl_hybrid (void)
     if (!frontier_buffer)
         exit_with_error ("Failed to allocate frontier buffer");
 	cpu_y_part = (NB_TILES_Y / 2) * GPU_TILE_H; // Start with fifty-fifty
-	printf("cpu = %u\n", cpu_y_part);
 	gpu_y_part = DIM - cpu_y_part;
-	printf("gpu = %u\n", gpu_y_part);
 
 	life_init();
 }
