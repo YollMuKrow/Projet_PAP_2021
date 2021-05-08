@@ -490,7 +490,7 @@ unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
 		                          NULL);
 
         // on transfert les données calculé dans le cur_table
-#pragma omp parallel for collapse(2) schedule(static)
+#pragma omp parallel for
         for(int i = 0; i < DIM; i++)
             cur_table(cpu_y_part,i) = frontier_data[i];
 
