@@ -692,20 +692,72 @@ unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
 
 		t1 = what_time_is_it ();
 		//On effectue la partie du CPU
-#pragma omp parallel for collapse(2) schedule(static)
-		for (int y = 0; y < cpu_y_part; y += TILE_H)
-			for (int x = 0; x < DIM; x += TILE_W)
-				do_tile (x, y, TILE_W, TILE_H, omp_get_thread_num()); // on modifie le résultat qu'on met dans next_table
 
-//        printf("next table after calcul cpu + merge gpu: \n");
-//        for(int y = 0; y < DIM; y++) {
-//            for (int x = 0; x < DIM; x++)
-//                printf("%d ", next_table(y, x));
-//            printf("\n");
-//        }
-//        printf("\n");
-//        printf("\n");
-//
+
+
+		////////////////// CODE OPENCL
+//#pragma omp parallel for collapse(2) schedule(static)
+//		for (int y = 0; y < cpu_y_part; y += TILE_H)
+//			for (int x = 0; x < DIM; x += TILE_W)
+//				do_tile (x, y, TILE_W, TILE_H, omp_get_thread_num()); // on modifie le résultat qu'on met dans next_table
+#pragma omp parallel
+        {
+            //Outer loops
+            //0xxxxxxx0
+            //y       y
+            //y       y
+            //y       y
+            //y       y
+            //0xxxxxxx0
+
+#pragma omp for nowait schedule(static)
+            for(int y = TILE_H; y < (DIM-TILE_H); y += TILE_H){
+                unsigned tile_y = y>>tile_h_power;
+                next_change_table(0, tile_y) 			= tile_needs_update(0, tile_y) && do_inner_tile(         1, y, TILE_W-1, TILE_H, omp_get_thread_num());
+                next_change_table(NB_TILES_X-1, tile_y) = tile_needs_update(NB_TILES_X-1, tile_y) && do_inner_tile(DIM-TILE_W, y, TILE_W-1, TILE_H, omp_get_thread_num());
+            }
+
+#pragma omp for nowait schedule(static)
+            for(int x = TILE_W; x<(DIM-TILE_W); x+=TILE_W){
+                unsigned tile_x = x>>tile_w_power;
+                next_change_table(tile_x, 0) 			= tile_needs_update(tile_x, 0) && do_inner_tile(x,          1, TILE_W, TILE_H-1, omp_get_thread_num());
+                next_change_table(tile_x, NB_TILES_Y-1) = tile_needs_update(tile_x, NB_TILES_Y-1) && do_inner_tile(x, DIM-TILE_H, TILE_W, TILE_H-1, omp_get_thread_num());
+            }
+
+            //Top left corner
+#pragma omp single
+            next_change_table(0, 0) = tile_needs_update(0, 0) && do_inner_tile( 1, 1, TILE_W-1, TILE_H-1, omp_get_thread_num());
+
+            //Bottom left corner
+#pragma omp single
+            next_change_table(0, NB_TILES_Y-1) = tile_needs_update(0, NB_TILES_Y-1) && do_inner_tile( 1, DIM-TILE_H, TILE_W-1, TILE_H-1, omp_get_thread_num());
+
+            //Top right corner
+#pragma omp single
+            next_change_table(NB_TILES_X-1, 0) = tile_needs_update(NB_TILES_X-1, 0) && do_inner_tile(DIM-TILE_W, 1, TILE_W-1, TILE_H-1, omp_get_thread_num());
+
+            //Bottom right corner
+#pragma omp single
+            next_change_table(NB_TILES_X-1, NB_TILES_Y-1) = tile_needs_update(NB_TILES_X-1, NB_TILES_Y-1) && do_inner_tile(DIM-TILE_W, DIM-TILE_H, TILE_W-1, TILE_H-1, omp_get_thread_num());
+
+            //Inner loop
+            //000000000
+            //0xxxxxxx0
+            //0xxxxxxx0
+            //0xxxxxxx0
+            //0xxxxxxx0
+            //000000000
+#pragma omp for collapse(2) schedule(static)
+            for(int y=TILE_H; y<(DIM-TILE_H); y+=TILE_H){
+                for(int x=TILE_W; x<(DIM-TILE_W); x+=TILE_W){
+                    unsigned tile_y = y>>tile_h_power;
+                    unsigned tile_x = x>>tile_w_power;
+                    next_change_table(tile_x, tile_y) = tile_needs_update(tile_x, tile_y) && do_inner_tile(x, y, TILE_W, TILE_H, omp_get_thread_num());
+                }
+            }
+        } // omp parallel
+        ///////////////// FIN CODE OPENCL
+
 
 		// on calcul le temps qu'a mis le CPU à faire les calculs
 		t2 = what_time_is_it ();
