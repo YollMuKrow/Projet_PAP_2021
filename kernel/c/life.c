@@ -492,11 +492,6 @@ unsigned life_compute_lazy(unsigned nb_iter)
             }
         } // omp parallel
         swap_tables ();
-//        change = true; //FIXME
-//        if (!change) { // we stop when all cells are stable
-//            res = it;
-//            break;
-//        }
     }
 
     return res;
@@ -633,8 +628,6 @@ unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
 	long t1, t2;
 	int gpu_accumulated_lines = 0;
 
-//	global[1] = DIM-GPU_TILE_H;
-//	cpu_y_part = GPU_TILE_H;
     unsigned *frontier_data = malloc (DIM*sizeof (unsigned ));
 
 	for (unsigned it = 1; it <= nb_iter; it++) {
@@ -686,7 +679,7 @@ unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
         clFlush (queue);
 
         // on transfert les données calculé dans le cur_table
-#pragma omp parallel for
+#pragma omp parallel for collapse(2) schedule(static,1)
         for(int i = 0; i < DIM; i++)
             cur_table(cpu_y_part,i) = frontier_data[i];
 
