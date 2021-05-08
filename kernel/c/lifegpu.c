@@ -1,4 +1,4 @@
-
+/*
 #include "easypap.h"
 #include "rle_lexer.h"
 
@@ -796,3 +796,4 @@ void life_draw_diehard (void)
     life_rle_parse ("data/rle/diehard.rle", DIM / 2, DIM / 2,
                     RLE_ORIENTATION_NORMAL);
 }
+*/
