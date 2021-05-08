@@ -505,6 +505,7 @@ unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
 				do_tile (x, y, TILE_W, TILE_H, omp_get_thread_num()); // on modifie le résultat qu'on met dans next_table
 
 		// on calcul le temps qu'a mis le CPU à faire les calculs
+
 		t2 = what_time_is_it ();
 		// On renvoit le résultat du CPU dans next_table
 		err = clEnqueueWriteBuffer (queue, next_buffer, CL_TRUE, 0,

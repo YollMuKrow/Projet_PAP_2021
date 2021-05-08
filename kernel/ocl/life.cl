@@ -70,7 +70,7 @@ __kernel void life_ocl_hybrid (__global unsigned *in, __global unsigned *out,__g
         n = (n == 3 + in[y*DIM + x]) | (n == 3);
 
         out[y*DIM + x] = n;
-        if(y == offset)
+        if(y == offset) //on stock la première ligne modifié
             frontier[x] == n;
     }
 }
