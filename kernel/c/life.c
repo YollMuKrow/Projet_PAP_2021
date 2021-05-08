@@ -228,12 +228,6 @@ unsigned life_compute_tiled_omp_for(unsigned nb_iter)
 
 	for (unsigned it = 1; it <= nb_iter; it++) {
 		unsigned change = 0;
-        printf("cur table init before cpu: \n");
-        for(int y = 0; y < DIM; y++) {
-            for (int x = 0; x < DIM; x++)
-                printf("%d ", cur_table(y, x));
-            printf("\n");
-        }
 #pragma omp parallel
 		{
 #pragma omp for collapse(2) schedule(static, 1)
@@ -477,10 +471,10 @@ unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
 				global[1] = gpu_y_part;
 			}
 		}*/
-        printf("next table init before gpu: \n");
+        printf("cur table before gpu: \n");
         for(int y = 0; y < DIM; y++) {
             for (int x = 0; x < DIM; x++)
-                printf("%d ", next_table(y, x));
+                printf("%d ", cur_table(y, x));
             printf("\n");
         }
 
@@ -515,13 +509,6 @@ unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
         for(int i = 0; i < DIM; i++)
             cur_table(cpu_y_part,i) = frontier_data[i];
 
-        printf("next table init after gpu + ajout frontière: \n");
-        for(int y = 0; y < DIM; y++) {
-            for (int x = 0; x < DIM; x++)
-                printf("%d ", next_table(y, x));
-            printf("\n");
-        }
-
 		t1 = what_time_is_it ();
 		//On effectue la partie du CPU
 #pragma omp parallel for collapse(2) schedule(static)
@@ -530,7 +517,7 @@ unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
 				do_tile (x, y, TILE_W, TILE_H, omp_get_thread_num()); // on modifie le résultat qu'on met dans next_table
 
 
-        printf("next table after calcul cpu: \n");
+        printf("next table after calcul cpu + merge gpu: \n");
         for(int y = 0; y < DIM; y++) {
             for (int x = 0; x < DIM; x++)
                 printf("%d ", next_table(y, x));
