@@ -228,6 +228,12 @@ unsigned life_compute_tiled_omp_for(unsigned nb_iter)
 
 	for (unsigned it = 1; it <= nb_iter; it++) {
 		unsigned change = 0;
+        printf("cur table init before cpu: \n");
+        for(int y = 0; y < DIM; y++) {
+            for (int x = 0; x < DIM; x++)
+                printf("%d ", cur_table(y, x));
+            printf("\n");
+        }
 #pragma omp parallel
 		{
 #pragma omp for collapse(2) schedule(static, 1)
@@ -236,7 +242,12 @@ unsigned life_compute_tiled_omp_for(unsigned nb_iter)
 					change |= do_tile (x, y, TILE_W, TILE_H, omp_get_thread_num());
 		}
 		swap_tables ();
-
+        printf("next table after cpu: \n");
+        for(int y = 0; y < DIM; y++) {
+            for (int x = 0; x < DIM; x++)
+                printf("%d ", next_table(y, x));
+            printf("\n");
+        }
 		if (!change) { // we stop when all cells are stable
 			res = it;
 			break;
@@ -504,7 +515,7 @@ unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
         for(int i = 0; i < DIM; i++)
             cur_table(cpu_y_part,i) = frontier_data[i];
 
-        printf("next table init after gpu + ajout frontiere: \n");
+        printf("next table init after gpu + ajout frontière: \n");
         for(int y = 0; y < DIM; y++) {
             for (int x = 0; x < DIM; x++)
                 printf("%d ", next_table(y, x));
@@ -533,7 +544,7 @@ unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
 		t2 = what_time_is_it ();
 		// On renvoit le résultat du CPU dans next_table
 		err = clEnqueueWriteBuffer (queue, next_buffer, CL_TRUE, 0,
-		                            DIM * cpu_y_part * sizeof (unsigned), _alternate_table, 0,
+		                            DIM * DIM * sizeof (unsigned), _alternate_table, 0,
 		                            NULL, NULL);
 		check (err, "Failed to write to buffer");
 
