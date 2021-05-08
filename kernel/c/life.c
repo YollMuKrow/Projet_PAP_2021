@@ -241,13 +241,13 @@ unsigned life_compute_tiled_omp_for(unsigned nb_iter)
 				for (int x = 0; x < DIM; x += TILE_W)
 					change |= do_tile (x, y, TILE_W, TILE_H, omp_get_thread_num());
 		}
-		swap_tables ();
         printf("next table after cpu: \n");
         for(int y = 0; y < DIM; y++) {
             for (int x = 0; x < DIM; x++)
                 printf("%d ", next_table(y, x));
             printf("\n");
         }
+		swap_tables ();
 		if (!change) { // we stop when all cells are stable
 			res = it;
 			break;
