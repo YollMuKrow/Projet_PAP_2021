@@ -490,7 +490,20 @@ unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
 		                          sizeof (unsigned) * DIM, frontier_data, 0, NULL,
 		                          NULL);
         check(err, "Failed to read frontier buffer");
-
+		printf("cur table after gpu: \n");
+		for(int y = 0; y < DIM; y++) {
+			for (int x = 0; x < DIM; x++)
+				printf("%d ", cur_table(y, x));
+			printf("\n");
+		}
+		printf("alternate table after gpu : \n");
+		for(int y = 0; y < DIM; y++) {
+			for (int x = 0; x < DIM; x++)
+				printf("%d ", next_table(y, x));
+			printf("\n");
+		}
+		printf("\n");
+		printf("\n");
         // on transfert les données calculé dans le cur_table
 #pragma omp parallel for
         for(int i = 0; i < DIM; i++)
@@ -506,8 +519,23 @@ unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
 			for (int x = 0; x < DIM; x += TILE_W)
 				do_tile (x, y, TILE_W, TILE_H, omp_get_thread_num()); // on modifie le résultat qu'on met dans next_table
 
-		// on calcul le temps qu'a mis le CPU à faire les calculs
 
+        printf("cur table after cpu: \n");
+        for(int y = 0; y < DIM; y++) {
+            for (int x = 0; x < DIM; x++)
+                printf("%d ", cur_table(y, x));
+            printf("\n");
+        }
+        printf("alternate table after cpu : \n");
+        for(int y = 0; y < DIM; y++) {
+            for (int x = 0; x < DIM; x++)
+                printf("%d ", next_table(y, x));
+            printf("\n");
+        }
+        printf("\n");
+        printf("\n");
+
+		// on calcul le temps qu'a mis le CPU à faire les calculs
 		t2 = what_time_is_it ();
 		// On renvoit le résultat du CPU dans next_table
 		err = clEnqueueWriteBuffer (queue, next_buffer, CL_TRUE, 0,
