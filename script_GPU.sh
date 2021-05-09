@@ -6,9 +6,9 @@ rm -rf plots/data/perf_data.csv
 for i in $(seq 1 5)
 do
   echo $i
-  for tileX in $(seq 1 9)
+  for tileX in $(seq 1 6)
   do
-    for tileY in $(seq 1 9)
+    for tileY in $(seq 1 6)
     do
       TILEX=$((2**$tileX)) TILEY=$((2**$tileY)) ./run -k life -o -v ocl_hybrid -n -i 1000 -a meta3x3 -s 6208 -tw $((2**$tileX)) -th $((2**$tileY))
     done
@@ -22,9 +22,9 @@ done
 for i in $(seq 1 5)
 do
   echo $i
-  for tileX in $(seq 1 6)
+  for tileX in $(seq 1 9)
   do
-    for tileY in $(seq 1 6)
+    for tileY in $(seq 1 9)
     do
       TILEX=$((2**$tileX)) TILEY=$((2**$tileY)) ./run -k life -o -v ocl_hybrid -n -i 1000 -a random -s 4096 -tw $((2**$tileX)) -th $((2**$tileY))
     done
