@@ -303,6 +303,7 @@ static int do_inner_tile (int x, int y, int width, int height, int who)
     return r;
 }
 
+/*
 ////Simple multithreaded version (collapsed for, static scheduling)
 ////test OMP_NUM_THREADS=46 OMP_PLACES=cores ./run -k life -n -i 100 -a random -s 2048 -v tiled_omp_for_cs1 -th 16 -tw 16 -> 263.057
 unsigned life_compute_tiled_omp_for(unsigned nb_iter)
@@ -396,6 +397,7 @@ unsigned life_compute_tiled_omp_for_inner_opt (unsigned nb_iter)
 
     return res;
 }
+*/
 
 /* LIFE COMPUTE LAZY
  * Update all tiles that changed during the last iteration, or
