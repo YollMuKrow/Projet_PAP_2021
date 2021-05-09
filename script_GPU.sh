@@ -10,7 +10,7 @@ do
   do
     for tileY in $(seq 1 6)
     do
-      TILEX=$((2**$tileX)) TILEY=$((2**$tileY)) ./run -k life -o -v ocl_hybrid -n -i 1000 -a meta3x3 -s 6208 -tw $((2**$tileX)) -th $((2**$tileY))
+      TILEX=$((2**$tileX)) TILEY=$((2**$tileY)) OMP_NUM_THREADS=46 OMP_PLACES=cores ./run -k life -o -v ocl_hybrid -n -i 1000 -a meta3x3 -s 6208 -tw $((2**$tileX)) -th $((2**$tileY))
     done
   done
 done
@@ -26,7 +26,7 @@ do
   do
     for tileY in $(seq 1 9)
     do
-      TILEX=$((2**$tileX)) TILEY=$((2**$tileY)) ./run -k life -o -v ocl_hybrid -n -i 1000 -a random -s 4096 -tw $((2**$tileX)) -th $((2**$tileY))
+      TILEX=$((2**$tileX)) TILEY=$((2**$tileY)) OMP_NUM_THREADS=46 OMP_PLACES=cores ./run -k life -o -v ocl_hybrid -n -i 1000 -a random -s 4096 -tw $((2**$tileX)) -th $((2**$tileY))
     done
   done
 done
@@ -42,7 +42,7 @@ do
   do
     for tileY in $(seq 1 9)
     do
-      TILEX=$((2**$tileX)) TILEY=$((2**$tileY)) ./run -k life -o -v ocl_hybrid -n -i 1000 -a guns -s 4096 -tw $((2**$tileX)) -th $((2**$tileY))
+      TILEX=$((2**$tileX)) TILEY=$((2**$tileY)) OMP_NUM_THREADS=46 OMP_PLACES=cores ./run -k life -o -v ocl_hybrid -n -i 1000 -a guns -s 4096 -tw $((2**$tileX)) -th $((2**$tileY))
     done
   done
 done
@@ -58,7 +58,7 @@ do
   do
     for tileY in $(seq 1 9)
     do
-      TILEX=$((2**$tileX)) TILEY=$((2**$tileY)) ./run -k life -o -v ocl_hybrid -n -i 1000 -a sparse -s 4096 -tw $((2**$tileX)) -th $((2**$tileY))
+      TILEX=$((2**$tileX)) TILEY=$((2**$tileY)) OMP_NUM_THREADS=46 OMP_PLACES=cores ./run -k life -o -v ocl_hybrid -n -i 1000 -a sparse -s 4096 -tw $((2**$tileX)) -th $((2**$tileY))
     done
   done
 done
