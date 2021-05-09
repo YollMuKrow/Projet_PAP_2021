@@ -751,7 +751,8 @@ unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
         gpu_duration = ocl_monitor (kernel_event, 0, cpu_y_part, global[0],
                                     global[1], TASK_TYPE_COMPUTE);
         clReleaseEvent (kernel_event);
-        //gpu_accumulated_lines += gpu_y_part;
+        gpu_accumulated_lines += gpu_y_part;
+
         {
             cl_mem tmp = cur_buffer;
             cur_buffer = next_buffer;
@@ -760,7 +761,6 @@ unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
 
         gpu_accumulated_lines += gpu_y_part;
         swap_tables ();
-        //// on get le buffer et on le met dans _table
     }
     if(do_display){
         // On renvoit le résultat du CPU dans next_table
