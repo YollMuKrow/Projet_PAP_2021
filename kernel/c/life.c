@@ -659,7 +659,7 @@ unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
         for(int i = 0; i < DIM; i++)
             frontier_data[i] = cur_table(cpu_y_part-1,i);
 
-        err = clEnqueueWriteBuffer (queue, frontier_buffer,0,
+        err = clEnqueueWriteBuffer (queue, frontier_buffer,CL_TRUE, 0,
                                     DIM * sizeof (unsigned), frontier_data, 0,
                                     NULL, NULL);
 
