@@ -654,6 +654,14 @@ unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
 				global[1] = gpu_y_part;
 			}
 		}*/
+        //on renvoit la ligne cpu_y_part-1 calculer par le CPU vers le GPU
+#pragma omp parallel for
+        for(int i = 0; i < DIM; i++)
+            frontier_data[i] = cur_table(cpu_y_part-1,i);
+
+        err = clEnqueueWriteBuffer (queue, frontier_buffer,0,
+                                    DIM * sizeof (unsigned), frontier_data, 0,
+                                    NULL, NULL);
 
         err = 0;
         err |= clSetKernelArg(compute_kernel, 0, sizeof(cl_mem), &cur_buffer);
@@ -741,14 +749,7 @@ unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
         ///////////////// FIN CODE OPENCL
         t2 = what_time_is_it ();
         ////// Fin du temps de calcul pour le cpu
-        //on renvoit la ligne cpu_y_part-1 calculer par le CPU vers le GPU
-#pragma omp parallel for
-        for(int i = 0; i < DIM; i++)
-            frontier_data[i] = next_table(cpu_y_part-1,i);
 
-        err = clEnqueueWriteBuffer (queue, next_buffer, CL_TRUE, DIM*(cpu_y_part-1)*sizeof (unsigned ),
-                                    DIM * sizeof (unsigned), frontier_data, 0,
-                                    NULL, NULL);
         cpu_duration = t2 - t1;
         gpu_duration = ocl_monitor (kernel_event, 0, cpu_y_part, global[0],
                                     global[1], TASK_TYPE_COMPUTE);
