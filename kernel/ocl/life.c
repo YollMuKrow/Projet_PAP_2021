@@ -44,9 +44,14 @@ __kernel void life_ocl_hybrid (__global unsigned *in, __global unsigned *out,__g
     __local unsigned n;
 
     if (x > 0 && x < DIM - 1 && y > 0 && y < DIM - 1){
-        n = (  in[(y-1)*DIM + x-1] + in[(y-1)*DIM + x] + in[(y-1)*DIM + x + 1] +
-               in[y    *DIM + x-1] + in[y    *DIM + x] + in[y    *DIM + x + 1] +
-               in[(y+1)*DIM + x-1] + in[(y+1)*DIM + x] + in[(y+1)*DIM + x + 1]);
+        if(y == offset)
+            n = (  offset[x-1]         + offset[x]         + offset[x+1]           +
+                   in[y    *DIM + x-1] + in[y    *DIM + x] + in[y    *DIM + x + 1] +
+                   in[(y+1)*DIM + x-1] + in[(y+1)*DIM + x] + in[(y+1)*DIM + x + 1]);
+        else
+            n = (  in[(y-1)*DIM + x-1] + in[(y-1)*DIM + x] + in[(y-1)*DIM + x + 1] +
+                   in[y    *DIM + x-1] + in[y    *DIM + x] + in[y    *DIM + x + 1] +
+                   in[(y+1)*DIM + x-1] + in[(y+1)*DIM + x] + in[(y+1)*DIM + x + 1]);
         n = (n == 3 + in[y*DIM + x]) | (n == 3);
 
         out[y*DIM + x] = n;
