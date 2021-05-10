@@ -45,7 +45,7 @@ __kernel void life_ocl_hybrid (__global unsigned *in, __global unsigned *out,__g
 
     if (x > 0 && x < DIM - 1 && y > 0 && y < DIM - 1){
         if(y == offset)
-            n = (  offset[x-1]         + offset[x]         + offset[x+1]           +
+            n = (  frontier[x-1]         + frontier[x]         + frontier[x+1]           +
                    in[y    *DIM + x-1] + in[y    *DIM + x] + in[y    *DIM + x + 1] +
                    in[(y+1)*DIM + x-1] + in[(y+1)*DIM + x] + in[(y+1)*DIM + x + 1]);
         else
