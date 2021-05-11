@@ -592,6 +592,179 @@ static unsigned gpu_y_part;
 static long gpu_duration = 0, cpu_duration = 0;
 
 void life_refresh_img_ocl_hybrid (void){
+	cl_int err;
+	// Façon de faire non optimisé mais en jouant avec l'offset de readbuffer, j'avais que des problèmes
+
+	// on écrit la partie du CPU (cur_table) dans le GPU (cur_buffer)
+	err = clEnqueueWriteBuffer (queue, cur_buffer, CL_TRUE, 0,
+	                            DIM * cpu_y_part * sizeof (unsigned), _table, 0,
+	                            NULL, NULL);
+	check (err, "Failed to write to buffer");
+	// Et on récupère l'image complète dans cur_buffer du GPU pour la stocké dans le CPU
+	err = clEnqueueReadBuffer(queue, cur_buffer, CL_TRUE, 0,
+	                          sizeof (unsigned) * DIM * DIM, _table, 0, NULL,
+	                          NULL);
+	check(err, "Failed to read cur buffer from GPU");
+	life_refresh_img ();
+}
+
+//static int much_greater_than (long t1, long t2)
+//{
+//	return (t1 > t2) && ((t1 - t2) * 100 / t1 > THRESHOLD);
+//}
+
+void life_init_ocl_hybrid (void)
+{
+	if (GPU_TILE_H != TILE_H)
+		exit_with_error ("CPU and GPU Tiles should have the same height (%d != %d)",
+		                 GPU_TILE_H, TILE_H);
+
+	cpu_y_part = (NB_TILES_Y / 2) * GPU_TILE_H; // Start with fifty-fifty
+	gpu_y_part = DIM - cpu_y_part;
+
+	life_init();
+}
+
+unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
+{
+	size_t global[2] = {DIM, gpu_y_part};
+	size_t local[2]  = {GPU_TILE_W, GPU_TILE_H};
+	cl_int err;
+	cl_event kernel_event;
+	long t1, t2;
+	int gpu_accumulated_lines = 0;
+
+	for (unsigned it = 1; it <= nb_iter; it++) {
+/*		// Load balancing
+		if (gpu_duration) {
+			if (much_greater_than (gpu_duration, cpu_duration) &&
+			    gpu_y_part > GPU_TILE_H) {
+				gpu_y_part -= GPU_TILE_H;
+				cpu_y_part += GPU_TILE_H;
+				global[1] = gpu_y_part;
+			} else if (much_greater_than (cpu_duration, gpu_duration) &&
+			           cpu_y_part > GPU_TILE_H) {
+				cpu_y_part -= GPU_TILE_H;
+				gpu_y_part += GPU_TILE_H;
+				global[1] = gpu_y_part;
+			}
+		}*/
+
+		err = 0;
+		err |= clSetKernelArg(compute_kernel, 0, sizeof(cl_mem), &cur_buffer);
+		err |= clSetKernelArg(compute_kernel, 1, sizeof(cl_mem), &next_buffer);
+		err |= clSetKernelArg(compute_kernel, 2, sizeof (unsigned), &cpu_y_part);
+		check(err, "Failed to set kernel arguments");
+
+		err = clEnqueueNDRangeKernel(queue, compute_kernel, 2, NULL, global, local,
+		                             0, NULL, &kernel_event); // le résultat va dans next_buffer
+
+		check(err, "Failed to execute kernel");
+
+		/////// début du temps de calcul pour le CPU
+		t1 = what_time_is_it ();
+		//On effectue la partie du CPU
+		////////////////// CODE OPENCL
+#pragma omp parallel
+		{
+			//Outer loops
+			//0xxxxxxx0
+			//y       y
+			//y       y
+			//y       y
+			//y       y
+			//0xxxxxxx0
+
+#pragma omp for nowait schedule(static)
+			for(int y = TILE_H; y < (DIM-TILE_H); y += TILE_H){
+				unsigned tile_y = y>>tile_h_power;
+				next_change_table(0, tile_y) 			= tile_needs_update(0, tile_y) && do_inner_tile(         1, y, TILE_W-1, TILE_H, omp_get_thread_num());
+				next_change_table(NB_TILES_X-1, tile_y) = tile_needs_update(NB_TILES_X-1, tile_y) && do_inner_tile(DIM-TILE_W, y, TILE_W-1, TILE_H, omp_get_thread_num());
+			}
+
+#pragma omp for nowait schedule(static)
+			for(int x = TILE_W; x<(DIM-TILE_W); x+=TILE_W){
+				unsigned tile_x = x>>tile_w_power;
+				next_change_table(tile_x, 0) 			= tile_needs_update(tile_x, 0) && do_inner_tile(x,          1, TILE_W, TILE_H-1, omp_get_thread_num());
+				next_change_table(tile_x, NB_TILES_Y-1) = tile_needs_update(tile_x, NB_TILES_Y-1) && do_inner_tile(x, DIM-TILE_H, TILE_W, TILE_H-1, omp_get_thread_num());
+			}
+			//Top left corner
+#pragma omp single
+			next_change_table(0, 0) = tile_needs_update(0, 0) && do_inner_tile( 1, 1, TILE_W-1, TILE_H-1, omp_get_thread_num());
+
+			//Bottom left corner
+#pragma omp single
+			next_change_table(0, NB_TILES_Y-1) = tile_needs_update(0, NB_TILES_Y-1) && do_inner_tile( 1, DIM-TILE_H, TILE_W-1, TILE_H-1, omp_get_thread_num());
+
+			//Top right corner
+#pragma omp single
+			next_change_table(NB_TILES_X-1, 0) = tile_needs_update(NB_TILES_X-1, 0) && do_inner_tile(DIM-TILE_W, 1, TILE_W-1, TILE_H-1, omp_get_thread_num());
+
+			//Bottom right corner
+#pragma omp single
+			next_change_table(NB_TILES_X-1, NB_TILES_Y-1) = tile_needs_update(NB_TILES_X-1, NB_TILES_Y-1) && do_inner_tile(DIM-TILE_W, DIM-TILE_H, TILE_W-1, TILE_H-1, omp_get_thread_num());
+
+			//Inner loop
+			//000000000
+			//0xxxxxxx0
+			//0xxxxxxx0
+			//0xxxxxxx0
+			//0xxxxxxx0
+			//000000000
+#pragma omp for collapse(2) schedule(static)
+			for(int y=TILE_H; y<(DIM-TILE_H); y+=TILE_H){
+				for(int x=TILE_W; x<(DIM-TILE_W); x+=TILE_W){
+					unsigned tile_y = y>>tile_h_power;
+					unsigned tile_x = x>>tile_w_power;
+					next_change_table(tile_x, tile_y) = tile_needs_update(tile_x, tile_y) && do_inner_tile(x, y, TILE_W, TILE_H, omp_get_thread_num());
+				}
+			}
+		} // omp parallel
+		///////////////// FIN CODE OPENCL
+		t2 = what_time_is_it ();
+		////// Fin du temps de calcul pour le cpu
+
+		err = clEnqueueWriteBuffer (queue, next_buffer,CL_TRUE, 0,
+		                            DIM * cpu_y_part * sizeof (unsigned), _alternate_table, 0,
+		                            NULL, NULL);  // CPU -> GPU
+		check(err, "Failed to write next buffer");
+
+		err = clEnqueueReadBuffer(queue, next_buffer, CL_TRUE, cpu_y_part*DIM*sizeof (unsigned ),
+		                          sizeof (unsigned) * gpu_y_part * DIM, _alternate_table + DIM*cpu_y_part, 0, NULL,
+		                          NULL);    // GPU -> CPU
+		check(err, "Failed to read next_buffer");
+
+		cpu_duration = t2 - t1;
+		gpu_duration = ocl_monitor (kernel_event, 0, cpu_y_part, global[0],
+		                            global[1], TASK_TYPE_COMPUTE);
+		clReleaseEvent (kernel_event);
+		gpu_accumulated_lines += gpu_y_part;
+
+		{
+			cl_mem tmp = cur_buffer;
+			cur_buffer = next_buffer;
+			next_buffer = tmp;
+		}
+
+		gpu_accumulated_lines += gpu_y_part;
+		swap_tables ();
+	}
+	if(do_display){
+		// On renvoit le résultat du CPU dans next_table
+		err = clEnqueueWriteBuffer (queue, cur_buffer, CL_TRUE, 0,
+		                            DIM * cpu_y_part * sizeof (unsigned), _table, 0,
+		                            NULL, NULL);
+		check (err, "Failed to write to buffer");
+	}
+	else
+		PRINT_DEBUG ('u', "In average, GPU took %.1f%% of the lines\n",
+		             (float)gpu_accumulated_lines * 100 / (DIM * nb_iter));
+	clFinish (queue);
+	return 0;
+}
+
+////////////////////////// OCL version hybrid
+void life_refresh_img_ocl_hybrid_opti (void){
     cl_int err;
     // Façon de faire non optimisé mais en jouant avec l'offset de readbuffer, j'avais que des problèmes
 
@@ -613,19 +786,19 @@ void life_refresh_img_ocl_hybrid (void){
 //	return (t1 > t2) && ((t1 - t2) * 100 / t1 > THRESHOLD);
 //}
 
-void life_init_ocl_hybrid (void)
+void life_init_ocl_hybrid_opti (void)
 {
     if (GPU_TILE_H != TILE_H)
         exit_with_error ("CPU and GPU Tiles should have the same height (%d != %d)",
                          GPU_TILE_H, TILE_H);
 
-    cpu_y_part = (NB_TILES_Y / 4) * GPU_TILE_H; // Start with fifty-fifty
+    cpu_y_part = (NB_TILES_Y / 2) * GPU_TILE_H; // Start with fifty-fifty
     gpu_y_part = DIM - cpu_y_part;
 
     life_init();
 }
 
-unsigned life_invoke_ocl_hybrid (unsigned nb_iter)
+unsigned life_invoke_ocl_hybrid_opti (unsigned nb_iter)
 {
     size_t global[2] = {DIM, gpu_y_part};
     size_t local[2]  = {GPU_TILE_W, GPU_TILE_H};
