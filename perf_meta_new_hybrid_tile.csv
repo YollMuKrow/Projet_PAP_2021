@@ -7,7 +7,6 @@ ernst;6208;16;16;5;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;1391399
 ernst;6208;16;16;6;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;1134959
 ernst;6208;16;16;7;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;1137001
 ernst;6208;16;16;8;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;1041158
-ernst;6208;16;16;9;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;1411848
 ernst;6208;16;16;10;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;1001461
 ernst;6208;16;16;11;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;952250
 ernst;6208;16;16;12;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;840148
@@ -51,11 +50,6 @@ ernst;6208;16;16;3;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;2079658
 ernst;6208;16;16;4;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;1642408
 ernst;6208;16;16;5;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;1387105
 ernst;6208;16;16;6;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;1888416
-ernst;6208;16;16;7;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;8034031
-ernst;6208;16;16;8;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;8380024
-ernst;6208;16;16;9;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;8313683
-ernst;6208;16;16;10;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;8330554
-ernst;6208;16;16;11;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;5162319
 ernst;6208;16;16;12;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;856134
 ernst;6208;16;16;13;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;900765
 ernst;6208;16;16;14;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;868869
@@ -83,7 +77,6 @@ ernst;6208;16;16;35;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;728115
 ernst;6208;16;16;36;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;750923
 ernst;6208;16;16;37;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;767456
 ernst;6208;16;16;38;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;782473
-ernst;6208;16;16;39;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;2111313
 ernst;6208;16;16;40;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;715768
 ernst;6208;16;16;41;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;696831
 ernst;6208;16;16;42;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;725391
@@ -124,8 +117,6 @@ ernst;6208;16;16;30;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;768347
 ernst;6208;16;16;31;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;726316
 ernst;6208;16;16;32;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;751965
 ernst;6208;16;16;33;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;880544
-ernst;6208;16;16;34;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;1826285
-ernst;6208;16;16;35;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;9886459
 ernst;6208;16;16;36;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;728772
 ernst;6208;16;16;37;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;782498
 ernst;6208;16;16;38;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;778103
@@ -145,7 +136,6 @@ ernst;6208;16;16;5;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;1386470
 ernst;6208;16;16;6;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;1133375
 ernst;6208;16;16;7;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;1103275
 ernst;6208;16;16;8;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;1041532
-ernst;6208;16;16;9;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;1414556
 ernst;6208;16;16;10;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;1150066
 ernst;6208;16;16;11;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;949421
 ernst;6208;16;16;12;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;865005
@@ -169,8 +159,6 @@ ernst;6208;16;16;29;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;746193
 ernst;6208;16;16;30;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;768133
 ernst;6208;16;16;31;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;769910
 ernst;6208;16;16;32;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;740809
-ernst;6208;16;16;33;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;2054959
-ernst;6208;16;16;34;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;9713489
 ernst;6208;16;16;35;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;728952
 ernst;6208;16;16;36;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;757222
 ernst;6208;16;16;37;life;ocl_hybrid_opti;100;;unlabelled;meta3x3;803659
