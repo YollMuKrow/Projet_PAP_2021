@@ -41,7 +41,6 @@ ernst;4096;16;16;39;life;ocl_hybrid_opti;100;;unlabelled;sparse;48861
 ernst;4096;16;16;40;life;ocl_hybrid_opti;100;;unlabelled;sparse;45670
 ernst;4096;16;16;41;life;ocl_hybrid_opti;100;;unlabelled;sparse;45775
 ernst;4096;16;16;42;life;ocl_hybrid_opti;100;;unlabelled;sparse;43799
-ernst;4096;16;16;43;life;ocl_hybrid_opti;100;;unlabelled;sparse;101247
 ernst;4096;16;16;44;life;ocl_hybrid_opti;100;;unlabelled;sparse;43475
 ernst;4096;16;16;45;life;ocl_hybrid_opti;100;;unlabelled;sparse;45125
 ernst;4096;16;16;46;life;ocl_hybrid_opti;100;;unlabelled;sparse;49904
@@ -86,7 +85,6 @@ ernst;4096;16;16;38;life;ocl_hybrid_opti;100;;unlabelled;sparse;44684
 ernst;4096;16;16;39;life;ocl_hybrid_opti;100;;unlabelled;sparse;45697
 ernst;4096;16;16;40;life;ocl_hybrid_opti;100;;unlabelled;sparse;47334
 ernst;4096;16;16;41;life;ocl_hybrid_opti;100;;unlabelled;sparse;44191
-ernst;4096;16;16;42;life;ocl_hybrid_opti;100;;unlabelled;sparse;58119
 ernst;4096;16;16;43;life;ocl_hybrid_opti;100;;unlabelled;sparse;45662
 ernst;4096;16;16;44;life;ocl_hybrid_opti;100;;unlabelled;sparse;44799
 ernst;4096;16;16;45;life;ocl_hybrid_opti;100;;unlabelled;sparse;51289
@@ -133,7 +131,6 @@ ernst;4096;16;16;39;life;ocl_hybrid_opti;100;;unlabelled;sparse;49569
 ernst;4096;16;16;40;life;ocl_hybrid_opti;100;;unlabelled;sparse;43506
 ernst;4096;16;16;41;life;ocl_hybrid_opti;100;;unlabelled;sparse;43501
 ernst;4096;16;16;42;life;ocl_hybrid_opti;100;;unlabelled;sparse;43233
-ernst;4096;16;16;43;life;ocl_hybrid_opti;100;;unlabelled;sparse;56486
 ernst;4096;16;16;44;life;ocl_hybrid_opti;100;;unlabelled;sparse;43489
 ernst;4096;16;16;45;life;ocl_hybrid_opti;100;;unlabelled;sparse;43300
 ernst;4096;16;16;46;life;ocl_hybrid_opti;100;;unlabelled;sparse;43525
@@ -176,13 +173,10 @@ ernst;4096;16;16;36;life;ocl_hybrid_opti;100;;unlabelled;sparse;43642
 ernst;4096;16;16;37;life;ocl_hybrid_opti;100;;unlabelled;sparse;43530
 ernst;4096;16;16;38;life;ocl_hybrid_opti;100;;unlabelled;sparse;43687
 ernst;4096;16;16;39;life;ocl_hybrid_opti;100;;unlabelled;sparse;44558
-ernst;4096;16;16;40;life;ocl_hybrid_opti;100;;unlabelled;sparse;65760
-ernst;4096;16;16;41;life;ocl_hybrid_opti;100;;unlabelled;sparse;62423
 ernst;4096;16;16;42;life;ocl_hybrid_opti;100;;unlabelled;sparse;44131
 ernst;4096;16;16;43;life;ocl_hybrid_opti;100;;unlabelled;sparse;43628
 ernst;4096;16;16;44;life;ocl_hybrid_opti;100;;unlabelled;sparse;43620
 ernst;4096;16;16;45;life;ocl_hybrid_opti;100;;unlabelled;sparse;44538
-ernst;4096;16;16;46;life;ocl_hybrid_opti;100;;unlabelled;sparse;81316
 ernst;4096;16;16;1;life;ocl_hybrid_opti;100;;unlabelled;sparse;118363
 ernst;4096;16;16;2;life;ocl_hybrid_opti;100;;unlabelled;sparse;76883
 ernst;4096;16;16;3;life;ocl_hybrid_opti;100;;unlabelled;sparse;65117
@@ -221,9 +215,7 @@ ernst;4096;16;16;35;life;ocl_hybrid_opti;100;;unlabelled;sparse;44467
 ernst;4096;16;16;36;life;ocl_hybrid_opti;100;;unlabelled;sparse;44289
 ernst;4096;16;16;37;life;ocl_hybrid_opti;100;;unlabelled;sparse;43851
 ernst;4096;16;16;38;life;ocl_hybrid_opti;100;;unlabelled;sparse;43400
-ernst;4096;16;16;39;life;ocl_hybrid_opti;100;;unlabelled;sparse;60129
 ernst;4096;16;16;40;life;ocl_hybrid_opti;100;;unlabelled;sparse;43566
-ernst;4096;16;16;41;life;ocl_hybrid_opti;100;;unlabelled;sparse;58347
 ernst;4096;16;16;42;life;ocl_hybrid_opti;100;;unlabelled;sparse;43593
 ernst;4096;16;16;43;life;ocl_hybrid_opti;100;;unlabelled;sparse;45161
 ernst;4096;16;16;44;life;ocl_hybrid_opti;100;;unlabelled;sparse;43425
