@@ -619,7 +619,7 @@ void life_init_ocl_hybrid (void)
         exit_with_error ("CPU and GPU Tiles should have the same height (%d != %d)",
                          GPU_TILE_H, TILE_H);
 
-    cpu_y_part = (NB_TILES_Y / 2) * GPU_TILE_H; // Start with fifty-fifty
+    cpu_y_part = (NB_TILES_Y / 4) * GPU_TILE_H; // Start with fifty-fifty
     gpu_y_part = DIM - cpu_y_part;
 
     life_init();
