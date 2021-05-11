@@ -38,25 +38,18 @@ __kernel void life_ocl_finish (__global unsigned *in, __global unsigned *out, __
 }
 
 
-__kernel void life_ocl_hybrid (__global unsigned *in, __global unsigned *out,__global unsigned *frontier, unsigned offset){
+__kernel void life_ocl_hybrid (__global unsigned *in, __global unsigned *out, unsigned offset){
     unsigned x = get_global_id (0);
     unsigned y = get_global_id (1) + offset;
     __local unsigned n;
 
     if (x > 0 && x < DIM - 1 && y > 0 && y < DIM - 1){
-        if(y == offset)
-            n = (  frontier[x-1]         + frontier[x]         + frontier[x+1]           +
-                   in[y    *DIM + x-1] + in[y    *DIM + x] + in[y    *DIM + x + 1] +
-                   in[(y+1)*DIM + x-1] + in[(y+1)*DIM + x] + in[(y+1)*DIM + x + 1]);
-        else
             n = (  in[(y-1)*DIM + x-1] + in[(y-1)*DIM + x] + in[(y-1)*DIM + x + 1] +
                    in[y    *DIM + x-1] + in[y    *DIM + x] + in[y    *DIM + x + 1] +
                    in[(y+1)*DIM + x-1] + in[(y+1)*DIM + x] + in[(y+1)*DIM + x + 1]);
         n = (n == 3 + in[y*DIM + x]) | (n == 3);
 
         out[y*DIM + x] = n;
-        if(y == offset) //on stock la première ligne modifié
-            frontier[x] == n;
     }
 }
 
