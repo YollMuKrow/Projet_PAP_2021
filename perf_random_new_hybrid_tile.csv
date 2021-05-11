@@ -12,7 +12,6 @@ ernst;4096;16;16;10;life;ocl_hybrid_opti;100;;unlabelled;random;858718
 ernst;4096;16;16;11;life;ocl_hybrid_opti;100;;unlabelled;random;826613
 ernst;4096;16;16;12;life;ocl_hybrid_opti;100;;unlabelled;random;805186
 ernst;4096;16;16;13;life;ocl_hybrid_opti;100;;unlabelled;random;1158402
-ernst;4096;16;16;14;life;ocl_hybrid_opti;100;;unlabelled;random;2941516
 ernst;4096;16;16;15;life;ocl_hybrid_opti;100;;unlabelled;random;788155
 ernst;4096;16;16;16;life;ocl_hybrid_opti;100;;unlabelled;random;750559
 ernst;4096;16;16;17;life;ocl_hybrid_opti;100;;unlabelled;random;696676
@@ -28,9 +27,6 @@ ernst;4096;16;16;26;life;ocl_hybrid_opti;100;;unlabelled;random;872703
 ernst;4096;16;16;27;life;ocl_hybrid_opti;100;;unlabelled;random;835316
 ernst;4096;16;16;28;life;ocl_hybrid_opti;100;;unlabelled;random;813959
 ernst;4096;16;16;29;life;ocl_hybrid_opti;100;;unlabelled;random;821377
-ernst;4096;16;16;30;life;ocl_hybrid_opti;100;;unlabelled;random;1991906
-ernst;4096;16;16;31;life;ocl_hybrid_opti;100;;unlabelled;random;1664595
-ernst;4096;16;16;32;life;ocl_hybrid_opti;100;;unlabelled;random;1202257
 ernst;4096;16;16;33;life;ocl_hybrid_opti;100;;unlabelled;random;815187
 ernst;4096;16;16;34;life;ocl_hybrid_opti;100;;unlabelled;random;706217
 ernst;4096;16;16;35;life;ocl_hybrid_opti;100;;unlabelled;random;734186
@@ -43,8 +39,6 @@ ernst;4096;16;16;41;life;ocl_hybrid_opti;100;;unlabelled;random;697981
 ernst;4096;16;16;42;life;ocl_hybrid_opti;100;;unlabelled;random;657517
 ernst;4096;16;16;43;life;ocl_hybrid_opti;100;;unlabelled;random;654178
 ernst;4096;16;16;44;life;ocl_hybrid_opti;100;;unlabelled;random;638405
-ernst;4096;16;16;45;life;ocl_hybrid_opti;100;;unlabelled;random;1713977
-ernst;4096;16;16;46;life;ocl_hybrid_opti;100;;unlabelled;random;9935635
 ernst;4096;16;16;1;life;ocl_hybrid_opti;100;;unlabelled;random;4951424
 ernst;4096;16;16;2;life;ocl_hybrid_opti;100;;unlabelled;random;2496162
 ernst;4096;16;16;3;life;ocl_hybrid_opti;100;;unlabelled;random;1794554
@@ -158,17 +152,12 @@ ernst;4096;16;16;18;life;ocl_hybrid_opti;100;;unlabelled;random;730220
 ernst;4096;16;16;19;life;ocl_hybrid_opti;100;;unlabelled;random;738252
 ernst;4096;16;16;20;life;ocl_hybrid_opti;100;;unlabelled;random;757770
 ernst;4096;16;16;21;life;ocl_hybrid_opti;100;;unlabelled;random;899547
-ernst;4096;16;16;22;life;ocl_hybrid_opti;100;;unlabelled;random;2060806
-ernst;4096;16;16;23;life;ocl_hybrid_opti;100;;unlabelled;random;8509947
-ernst;4096;16;16;24;life;ocl_hybrid_opti;100;;unlabelled;random;3740618
 ernst;4096;16;16;25;life;ocl_hybrid_opti;100;;unlabelled;random;932937
 ernst;4096;16;16;26;life;ocl_hybrid_opti;100;;unlabelled;random;907748
 ernst;4096;16;16;27;life;ocl_hybrid_opti;100;;unlabelled;random;863367
 ernst;4096;16;16;28;life;ocl_hybrid_opti;100;;unlabelled;random;812427
 ernst;4096;16;16;29;life;ocl_hybrid_opti;100;;unlabelled;random;796193
 ernst;4096;16;16;30;life;ocl_hybrid_opti;100;;unlabelled;random;798433
-ernst;4096;16;16;31;life;ocl_hybrid_opti;100;;unlabelled;random;2083342
-ernst;4096;16;16;32;life;ocl_hybrid_opti;100;;unlabelled;random;10128971
 ernst;4096;16;16;33;life;ocl_hybrid_opti;100;;unlabelled;random;787567
 ernst;4096;16;16;34;life;ocl_hybrid_opti;100;;unlabelled;random;743381
 ernst;4096;16;16;35;life;ocl_hybrid_opti;100;;unlabelled;random;688782
@@ -180,8 +169,6 @@ ernst;4096;16;16;40;life;ocl_hybrid_opti;100;;unlabelled;random;775831
 ernst;4096;16;16;41;life;ocl_hybrid_opti;100;;unlabelled;random;692509
 ernst;4096;16;16;42;life;ocl_hybrid_opti;100;;unlabelled;random;656604
 ernst;4096;16;16;43;life;ocl_hybrid_opti;100;;unlabelled;random;669529
-ernst;4096;16;16;44;life;ocl_hybrid_opti;100;;unlabelled;random;2271769
-ernst;4096;16;16;45;life;ocl_hybrid_opti;100;;unlabelled;random;1381434
 ernst;4096;16;16;46;life;ocl_hybrid_opti;100;;unlabelled;random;631609
 ernst;4096;16;16;1;life;ocl_hybrid_opti;100;;unlabelled;random;4856859
 ernst;4096;16;16;2;life;ocl_hybrid_opti;100;;unlabelled;random;2527593
@@ -208,8 +195,6 @@ ernst;4096;16;16;22;life;ocl_hybrid_opti;100;;unlabelled;random;737568
 ernst;4096;16;16;23;life;ocl_hybrid_opti;100;;unlabelled;random;780018
 ernst;4096;16;16;24;life;ocl_hybrid_opti;100;;unlabelled;random;750797
 ernst;4096;16;16;25;life;ocl_hybrid_opti;100;;unlabelled;random;937433
-ernst;4096;16;16;26;life;ocl_hybrid_opti;100;;unlabelled;random;1884415
-ernst;4096;16;16;27;life;ocl_hybrid_opti;100;;unlabelled;random;5634022
 ernst;4096;16;16;28;life;ocl_hybrid_opti;100;;unlabelled;random;799245
 ernst;4096;16;16;29;life;ocl_hybrid_opti;100;;unlabelled;random;799195
 ernst;4096;16;16;30;life;ocl_hybrid_opti;100;;unlabelled;random;800342
