@@ -32,6 +32,38 @@ do
   done
   done
   mv plots/data/perf_data.csv perf_sparse_opti_hybrid_tile.csv
+rm -rf plots/data/perf_data.csv
+for j in $(seq 1 5)
+do
+for i in $(seq 1 46)
+do
+  TILEX=16 TILEY=16 OMP_NUM_THREADS=$i OMP_PLACES=cores ./run -k life -o -v ocl_hybrid_opti -n -i 100 -a meta3x3 -s 6208 -ts 16
+done
+done
+mv plots/data/perf_data.csv perf_meta_new_hybrid_tile.csv
+
+
+  rm -rf plots/data/perf_data.csv
+
+for j in $(seq 1 5)
+do
+for i in $(seq 1 46)
+do
+  TILEX=16 TILEY=16 OMP_NUM_THREADS=$i OMP_PLACES=cores ./run -k life -o -v ocl_hybrid_opti -n -i 100 -a random -s 4096 -ts 16
+  done
+  done
+  mv plots/data/perf_data.csv perf_random_new_hybrid_tile.csv
+
+  rm -rf plots/data/perf_data.csv
+
+for j in $(seq 1 5)
+do
+for i in $(seq 1 46)
+do
+  TILEX=16 TILEY=16 OMP_NUM_THREADS=$i OMP_PLACES=cores ./run -k life -o -v ocl_hybrid_opti -n -i 100 -a sparse -s 4096 -ts 16
+  done
+  done
+  mv plots/data/perf_data.csv perf_sparse_new_hybrid_tile.csv
 
 #  echo $i
 #  for tileX in $(seq 1 6)
